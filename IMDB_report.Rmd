@@ -1,0 +1,265 @@
+---
+title: "Análise  - Inteligência Computacional -  COC 361"
+author: "Lucas Rolim"
+date: "9 de outubro de 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Descrição do problema
+
+**Problema: É possível prever a nota IMDB de um filme antes mesmo dele ser lançado?**
+
+Essa será a principal pergunta que irá guiar o desenvolvimento de uma análise de mais de 5000 filmes do site [IMDB](www.imdb.com). Utilizando técncias de aprendizado de máquina e estatística nós iremos não só tentar criar um modelo que seja capaz de responder à pergunta anterior de maneira satistatória como também iremos criar visualizações que nos permitam entender as relações entre essas variáveis.
+
+Esse problema é importante não só para ajudar espectadores em geral a reduzir sua taxa de decepção ao ir ao cinema, mas também de suma importância para a indústria cinematrográfica em si. Filmes, antes de tudo, são investimentos. Conseguir prever se um filme será um fiasco ou um sucesso de bilheteria pode poupar milhões as produtoras de filmes e investidores.
+
+*Para os que desconhecem, o IMDB.com é a principal referência mundial na avaliação da qualidade de filmes. O site conta com dezenas de milhares de filmes com avaliações e críticas produzidas por centenas de milhares de usuários e críticos profissionais*
+
+
+## Descrição dos Dados
+
+Os dados são originados de um processo de mineração dentro do site [IMDB.com](IMDB.com). Esse conjunto de dados possui informação de 5043 filmes, lançados ao longo dos últimos 100 anos em 66 países. Ainda, conta com 2399 nomes de diretores e centenas de nomes de atores  atrizes.
+
+**As 28 variáveis disponíveis são:**
+
+"color"            ;         "director_name"          ;   "num_critic_for_reviews"   
+"duration"                  "director_facebook_likes"   "actor_3_facebook_likes"   
+"actor_2_name"      ;        "actor_1_facebook_likes"  ;  "gross"                    
+"genres"              ;      "actor_1_name"           ;   "movie_title"              
+"num_voted_users"      ;     "cast_total_facebook_likes" ; "actor_3_name"             
+"facenumber_in_poster"   ;   "plot_keywords"       ;      "movie_imdb_link"          
+"num_user_for_reviews"    ;  "language"                  "country"                  
+"content_rating"       ;     "budget"               ;     "title_year"               
+"actor_2_facebook_likes"  ;  "imdb_score"         ;       "aspect_ratio"             
+"movie_facebook_likes
+
+**A FAZER: Descrever cada uma das variáveis**
+**A FAZER: Mriz de correlação**
+
+## Pré Processamento
+
+**A FAZER: EXPLICAR A IMPORTÂNCIA e MOTIVO DO PRÉ PROCESSAMENTO**
+
+
+### Leitura dos Dados
+
+```{r leitura}
+imdb_data = read.csv("movie_metadata.csv",stringsAsFactors = FALSE)
+str(imdb_data)
+```
+### Normalização dos Dados
+
+Algumas das variáveis de texto do conjunto de dados serão convertidas em variáveis numéricas através de um critério de normalização definido pelas seguintes regras:
+
+- Se o filme foi produzido no EUA a variável *country* será 1, caso contrário será 0;
+- Se o filme foi produzido em inglês a variável *language* será 1, caso contrário será 0.
+- Todos os filmes terão a variável *director_name* substituida pela média dos filmes já feitos pelo diretor no IMDB,
+
+Essas regras de normalização foram definidas pensando no fato da indústria cinematográfica americana ser a mais
+bem desenvolvida e com maiores orçamentos do mundo, além de produzir os maiores sucessos das últimas décadas. Logo, espera-se que filmes americanos tenham uma probabilidade maior de pontuar melhor na escala IMDB.
+
+Por fim, passaremos a considerar apenas os valores numéricos do modelo e também desconsideraremos as entradas com valores ausentes.
+
+```{r normalization}
+library(dplyr)
+
+imdb_data <- na.exclude(imdb_data)
+
+imdb_data$language[imdb_data$language !="English"] = 0
+imdb_data$language[imdb_data$language =="English"] = 1
+imdb_data$language <- as.numeric(imdb_data$language)
+imdb_data$country[imdb_data$country != "USA"] = 0
+imdb_data$country[imdb_data$country == "USA"] = 1
+imdb_data$country <- as.numeric(imdb_data$country)
+
+directorMean <-function(data){
+  data = directorHistory [which(directorHistory ==data),2]
+  data
+}
+
+directorHistory = summarise(group_by(imdb_data,director_name),mean=mean(imdb_score))
+directorIMDB = sapply(imdb_data$director_name,directorMean)
+imdb_data$director_name <- as.numeric(directorIMDB)
+
+imdb_data <- imdb_data[sapply(imdb_data,is.numeric)]
+
+```
+### Particionamento dos conjunto de dados
+
+Utilizaremos dois conjuntos de dados ao longo das análises, um para treino e um para testes. Essa estratégia visa evitar *(ou ao menos identificar)* o problema de overfitting do modelo no conjunto de treino.
+
+A proporção da separação foi de 70% dos dados para treino e 30% para testes. Essas proporção foi retirada da literatura.
+
+```{r split}
+library(caTools)
+set.seed(161095)
+split = sample.split(imdb_data$imdb_score,SplitRatio = 0.7)
+trainData = subset(imdb_data,split == TRUE)
+testData = subset(imdb_data,split == FALSE)
+```
+
+### Definição das Variáveis
+
+Nesse trecho iremos definir de maneira genérica as variáveis que serão utilizadas daqui em diante. Esse processo poupa o trabalho de reescrever código depois e também facilita a manutenção do mesmo.
+
+```{r variáveis}
+goal_variable = "imdb_score"
+dependent_variable = paste(goal_variable," ~ ")
+independent_variables = paste(colnames(imdb_data)[colnames(imdb_data) != goal_variable],collapse = "+")
+model_variables = paste(dependent_variable,independent_variables)
+```
+## Visualização geral do Conjunto de Dados
+
+
+### Histograma
+
+**A FAZER: EXPLICAR HISTOGRAMA **
+
+```{r Histograma}
+library(ggplot2)
+ggplot(imdb_data,aes(x=imdb_score)) + geom_histogram() + xlab("Nota no IMDB") + ylab("Número de Filmes")
+```
+
+### Relação entre a nota IMDB e a duração do filme
+
+**A FAZER: RELAÇÃO DURAÇÃO VS IMDB. QUAIS CONCLUSÕES? **
+
+
+```{r IMDBvsDuração}
+
+ggplot(imdb_data,aes(x=duration, y=imdb_score)) + geom_point(colour="grey60") +
+  stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Nota no IMDB") + xlab("Duração do filme (minutos)")
+```
+
+### Relação entre a nota IMDB e o lucro
+
+**A FAZER: EXPLICAR A RELAÇÃO LUCRO VS IMDB. QUAIS CONCLUSÕES? **
+
+
+```{r IMDBvsLucro}
+ggplot(imdb_data,aes(x=gross, y=imdb_score)) + geom_point(colour="grey60") +
+  stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Nota no IMDB") + xlab("Lucro do Filme")
+```
+
+### Relação entre a nota IMDB e orçamento
+
+**A FAZER: EXPLICAR A RELAÇÃO ORGAMENTO (BUDGET) VS IMDB. QUAIS CONCLUSÕES?**
+
+```{r IMDBvsOrçamento}
+# Código Aqui
+```
+
+### Relação entre a nota IMDB e o Diretor
+
+**A FAZER: EXPLICAR A RELAÇÃO DIRETOR VS IMDB. QUAIS CONCLUSÕES?**
+**Deve usar o conjunto de Dados directorHistory **
+
+```{r IMDBvsDiretor}
+# Código Aqui
+```
+
+## Metodologia
+
+A etratégia adotada será partir do modelo mais simples e rápido para o modelo mais complexo e robusto. Visto isso, em nossa análise testaremos os quatro seguintes modelos:
+
+- Modelo "Burro", ou previsão pela média
+- Modelo de Regressão Linear
+- Modelo da Árvore de Regressão
+- Modelo de Florestas Aleatórias
+
+Além disso, para facilitar a avaliação dos modelos, adotaremos um indicador numérico unitário de erro. Oindicador esclhido será o RMSE.
+
+**A FAZER: EXPLICAR O QUE É SSE E RMSE (Root-mean-square deviation) **
+
+
+### Modelo "Burro"
+
+**A FAZER: EXPLICAR O MODELO E O SEU RESULTADO RMSE. É UM BOM RESULTADO? HOUVE MELHORA?**
+
+```{r ModeloMédia}
+DumbPredict = mean(trainData$imdb_score)
+SSE = sum((testData$imdb_score - DumbPredict)^2)
+RMSE = sqrt(SSE / nrow(testData))
+RMSE
+```
+
+## Modelo de Regressão Linear
+
+**A FAZER: EXPLICAR O MODELO E O SEU RESULTADO RMSE. É UM BOM RESULTADO? HOUVE MELHORA?**
+
+```{r ModeloLinear, echo=FALSE}
+linearModel = lm(model_variables,data=trainData)
+summary(linearModel)
+
+linerPrediction = predict(linearModel,testData)
+SSE = sum((testData$imdb_score - linerPrediction)^2)
+RMSE = sqrt(SSE / nrow(testData))
+RMSE
+```
+
+Vamos tentar agora somente com as variáveis mais relevantes do modelo anterior
+
+```{r ModeloLinear_limpo, echo=FALSE}
+linearModel_clean = lm(paste(dependent_variable,"num_critic_for_reviews+duration +num_voted_users + num_user_for_reviews + language + country + title_year"),data=trainData)
+summary(linearModel_clean)
+linerPrediction_clean = predict(linearModel_clean,testData)
+SSE = sum((testData$imdb_score - linerPrediction)^2)
+RMSE = sqrt(SSE / nrow(testData))
+RMSE
+```
+
+
+**Coonclusões sobre o Modelo Linear**
+
+**A FAZER: EXPLICAR  AS CONCLUSÕES.**
+
+## Modelo da Árvore de Regressão
+
+
+**A FAZER: CRIAR ESSA PARTE **
+
+PODE SE BASEAR NO QUE FOI FEITO EM https://www.kaggle.com/adhok93/d/deepmatrix/imdb-5000-movie-dataset/predicting-imdb-scores/discussion
+
+
+## Modelo de Florestas Aleatórias
+
+**A FAZER: EXPLICAR O MODELO E O SEU RESULTADO RMSE. É UM BOM RESULTADO? HOUVE MELHORA?**
+
+
+```{r ModeloFlorestaaleatória}
+library(randomForest)
+array_ntree<- c(100,200,300,400,500,600,700,800,900)
+RMSE_vector <- c()
+for(i in array_ntree){
+  set.seed(1995)
+  stevenForest = randomForest(imdb_score  ~.,data=trainData,ntree = i)
+  predictForest = predict(stevenForest,newdata= testData)
+  SSE = sum((testData$imdb_score - predictForest)^2)
+  RMSE = sqrt(SSE / nrow(testData))
+  RMSE_vector <- c(RMSE_vector,RMSE)
+}
+min(RMSE_vector)
+
+```
+
+**Desempenho do modelo de acordo com o número de árvores utilizadas**
+
+```{r desempenhoVsArvores}
+ggplot(data.frame(array_ntree,RMSE_vector), aes(x=(array_ntree), y=RMSE_vector)) + geom_line() + geom_point()
+```
+
+
+**Conclusões Modelo Floresta Aleatória**
+
+
+*Pacotes utilizados nessa análise*
+
+- rMarkdown
+- ggplot
+- caTools
+- randomForest
+- dplyr
