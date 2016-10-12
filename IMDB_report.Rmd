@@ -85,6 +85,7 @@ directorHistory = summarise(group_by(imdb_data,director_name),mean=mean(imdb_sco
 directorIMDB = sapply(imdb_data$director_name,directorMean)
 imdb_data$director_name <- as.numeric(directorIMDB)
 
+
 imdb_data <- imdb_data[sapply(imdb_data,is.numeric)]
 
 ```
@@ -204,10 +205,10 @@ RMSE
 Vamos tentar agora somente com as variáveis mais relevantes do modelo anterior
 
 ```{r ModeloLinear_limpo, echo=FALSE}
-linearModel_clean = lm(paste(dependent_variable,"num_critic_for_reviews+duration +num_voted_users + num_user_for_reviews + language + country + title_year"),data=trainData)
+linearModel_clean = lm(paste(dependent_variable,"num_critic_for_reviews+duration +num_voted_users + num_user_for_reviews + language + country + title_year+ director_name"),data=trainData)
 summary(linearModel_clean)
 linerPrediction_clean = predict(linearModel_clean,testData)
-SSE = sum((testData$imdb_score - linerPrediction)^2)
+SSE = sum((testData$imdb_score - linerPrediction_clean)^2)
 RMSE = sqrt(SSE / nrow(testData))
 RMSE
 ```
@@ -232,7 +233,7 @@ PODE SE BASEAR NO QUE FOI FEITO EM https://www.kaggle.com/adhok93/d/deepmatrix/i
 
 ```{r ModeloFlorestaaleatória}
 library(randomForest)
-array_ntree<- c(100,200,300,400,500,600,700,800,900)
+array_ntree<- c(100,200,300,400,500)
 RMSE_vector <- c()
 for(i in array_ntree){
   set.seed(1995)
