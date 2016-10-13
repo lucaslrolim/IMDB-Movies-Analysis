@@ -349,30 +349,31 @@ RMSE</code></pre>
 <p>Vamos tentar agora somente com as variáveis mais relevantes do modelo anterior</p>
 <pre><code>## 
 ## Call:
-## lm(formula = paste(dependent_variable, &quot;num_critic_for_reviews+duration +num_voted_users + num_user_for_reviews + language + country + title_year&quot;), 
+## lm(formula = paste(dependent_variable, &quot;num_critic_for_reviews+duration +num_voted_users + num_user_for_reviews + language + country + title_year + director_name&quot;), 
 ##     data = trainData)
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -4.4182 -0.4711  0.0875  0.5801  2.4346 
+## -3.3923 -0.2219  0.0288  0.2341  1.7411 
 ## 
 ## Coefficients:
 ##                          Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)             5.165e+01  3.889e+00  13.281  &lt; 2e-16 ***
-## num_critic_for_reviews  2.126e-03  1.971e-04  10.787  &lt; 2e-16 ***
-## duration                9.397e-03  7.808e-04  12.035  &lt; 2e-16 ***
-## num_voted_users         3.236e-06  1.830e-07  17.684  &lt; 2e-16 ***
-## num_user_for_reviews   -5.929e-04  6.919e-05  -8.568  &lt; 2e-16 ***
-## language               -7.222e-01  8.800e-02  -8.207 3.50e-16 ***
-## country                -2.954e-01  4.366e-02  -6.766 1.63e-11 ***
-## title_year             -2.286e-02  1.938e-03 -11.797  &lt; 2e-16 ***
+## (Intercept)             2.004e+01  2.395e+00   8.366  &lt; 2e-16 ***
+## num_critic_for_reviews -2.654e-05  1.232e-04  -0.215 0.829502    
+## duration                1.098e-03  4.873e-04   2.253 0.024360 *  
+## num_voted_users         1.764e-06  1.127e-07  15.659  &lt; 2e-16 ***
+## num_user_for_reviews   -2.320e-04  4.214e-05  -5.506 4.03e-08 ***
+## language               -1.663e-01  5.379e-02  -3.092 0.002012 ** 
+## country                -1.029e-01  2.653e-02  -3.878 0.000108 ***
+## title_year             -9.629e-03  1.187e-03  -8.112 7.53e-16 ***
+## director_name           8.860e-01  1.304e-02  67.927  &lt; 2e-16 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 0.8395 on 2652 degrees of freedom
-## Multiple R-squared:  0.3762, Adjusted R-squared:  0.3746 
-## F-statistic: 228.5 on 7 and 2652 DF,  p-value: &lt; 2.2e-16</code></pre>
-<pre><code>## [1] 0.8085293</code></pre>
+## Residual standard error: 0.5072 on 2651 degrees of freedom
+## Multiple R-squared:  0.7724, Adjusted R-squared:  0.7717 
+## F-statistic:  1125 on 8 and 2651 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre><code>## [1] 0.8165016</code></pre>
 <p><strong>Coonclusões sobre o Modelo Linear</strong></p>
 <p><strong>A FAZER: EXPLICAR AS CONCLUSÕES.</strong></p>
 </div>
