@@ -64,29 +64,17 @@ bem desenvolvida e com maiores orçamentos do mundo, além de produzir os maiores 
 
 Por fim, passaremos a considerar apenas os valores numéricos do modelo e também desconsideraremos as entradas com valores ausentes.
 
+*A normalização da variável director_name será feita apenas no após o particionamento do conjunto de dados (próximo bloco de código). Esse cuidaod é necessário para que não sejam levados em conta no cálculo da média do IMDB do diretor os filmes que estão no conjunto de testes*
+
 ```{r normalization}
 library(dplyr)
-
-imdb_data <- na.exclude(imdb_data)
-
+imdb_data = na.exclude(imdb_data)
 imdb_data$language[imdb_data$language !="English"] = 0
 imdb_data$language[imdb_data$language =="English"] = 1
 imdb_data$language <- as.numeric(imdb_data$language)
 imdb_data$country[imdb_data$country != "USA"] = 0
 imdb_data$country[imdb_data$country == "USA"] = 1
 imdb_data$country <- as.numeric(imdb_data$country)
-
-directorMean <-function(data){
-  data = directorHistory [which(directorHistory ==data),2]
-  data
-}
-
-directorHistory = summarise(group_by(imdb_data,director_name),mean=mean(imdb_score))
-directorIMDB = sapply(imdb_data$director_name,directorMean)
-imdb_data$director_name <- as.numeric(directorIMDB)
-
-
-imdb_data <- imdb_data[sapply(imdb_data,is.numeric)]
 
 ```
 ### Particionamento dos conjunto de dados
@@ -101,6 +89,29 @@ set.seed(161095)
 split = sample.split(imdb_data$imdb_score,SplitRatio = 0.7)
 trainData = subset(imdb_data,split == TRUE)
 testData = subset(imdb_data,split == FALSE)
+
+# Trecho de normalização do director_name
+
+directorMean <-function(data){
+  data = directorHistory [which(directorHistory ==data),2]
+  data
+}
+
+
+directorHistory = summarise(group_by(trainData,director_name),mean=mean(imdb_score))
+directorIMDB = sapply(trainData$director_name,directorMean)
+trainData$director_name <- as.numeric(directorIMDB)
+directorIMDB = sapply(testData$director_name,directorMean)
+testData$director_name <- as.numeric(directorIMDB)
+
+# fim da normalização do director_name
+
+trainData<- trainData[sapply(trainData,is.numeric)]
+testData <- testData[sapply(testData ,is.numeric)]
+
+trainData <- na.exclude(trainData)
+testData <- na.exclude(testData)
+
 ```
 
 ### Definição das Variáveis
@@ -110,7 +121,7 @@ Nesse trecho iremos definir de maneira genérica as variáveis que serão utilizada
 ```{r variáveis}
 goal_variable = "imdb_score"
 dependent_variable = paste(goal_variable," ~ ")
-independent_variables = paste(colnames(imdb_data)[colnames(imdb_data) != goal_variable],collapse = "+")
+independent_variables = paste(colnames(trainData)[colnames(trainData) != goal_variable],collapse = "+")
 model_variables = paste(dependent_variable,independent_variables)
 ```
 ## Visualização geral do Conjunto de Dados
@@ -205,10 +216,10 @@ RMSE
 Vamos tentar agora somente com as variáveis mais relevantes do modelo anterior
 
 ```{r ModeloLinear_limpo, echo=FALSE}
-linearModel_clean = lm(paste(dependent_variable,"num_critic_for_reviews+duration +num_voted_users + num_user_for_reviews + language + country + title_year+ director_name"),data=trainData)
+linearModel_clean = lm(paste(dependent_variable,"num_critic_for_reviews+duration +num_voted_users + num_user_for_reviews + language + country + title_year"),data=trainData)
 summary(linearModel_clean)
 linerPrediction_clean = predict(linearModel_clean,testData)
-SSE = sum((testData$imdb_score - linerPrediction_clean)^2)
+SSE = sum((testData$imdb_score - linerPrediction)^2)
 RMSE = sqrt(SSE / nrow(testData))
 RMSE
 ```
@@ -233,7 +244,7 @@ PODE SE BASEAR NO QUE FOI FEITO EM https://www.kaggle.com/adhok93/d/deepmatrix/i
 
 ```{r ModeloFlorestaaleatória}
 library(randomForest)
-array_ntree<- c(100,200,300,400,500)
+array_ntree<- c(100,200,300,400,500,600,700,800,900)
 RMSE_vector <- c()
 for(i in array_ntree){
   set.seed(1995)
