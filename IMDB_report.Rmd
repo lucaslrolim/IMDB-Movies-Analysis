@@ -13,16 +13,23 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 
 **Problema: É possível prever a nota IMDB de um filme antes mesmo de ele ser lançado?**
 
-Essa será a principal pergunta que irá guiar o desenvolvimento de uma análise de mais de 5000 filmes presentes no site do [IMDB](www.imdb.com). Utilizando técncias de aprendizado de máquina e estatística nós iremos não só tentar criar um modelo que seja capaz de responder à pergunta anterior de maneira satistatória como também iremos criar visualizações que nos permitam entender as relações entre essas variáveis.
+Essa será a principal pergunta que irá guiar o desenvolvimento de uma análise de mais de 5000 filmes presentes no site do [IMDB](www.imdb.com). Utilizando técncias de aprendizado de máquina e estatística nós iremos não só tentar criar um **modelo de aproximação de funções* que seja capaz de responder à pergunta anterior de maneira satistatória, como também iremos criar visualizações que nos permitam entender as relações entre essas variáveis.
 
 Esse problema é importante não só para ajudar espectadores em geral a reduzir sua taxa de decepção ao ir ao cinema, mas também se caracteriza como de suma importância para a indústria cinematrográfica em si. Filmes, antes de tudo, são investimentos. Conseguir prever se um filme será um fiasco ou um sucesso de bilheteria pode poupar milhões as produtoras de filmes e investidores.
 
 *Para os que desconhecem, o IMDB.com é a principal referência mundial na avaliação da qualidade de filmes. O site conta com dezenas de milhares de filmes e também com avaliações e críticas produzidas por centenas de milhares de usuários e críticos profissionais*
 
+## Pesquisa Bibliográfica
+
+Os dados utilizados nessa análise foram minerados por Chuan Sun no site do IMDB e depois disponibilizados na plataforma Kaggle.Tanto o tópico desse conjunto de dados quanto uma explicação em detalhes sobre o processo de mineração podem ser encontrados nos seguintes links:
+
+- [Predict Movie Rating - NYC SCIENCE ACADEMY](https://blog.nycdatascience.com/student-works/machine-learning/movie-rating-prediction/)
+
+- [IMDB 5000 Movie Dataset](https://www.kaggle.com/deepmatrix/imdb-5000-movie-dataset)
 
 ## Descrição dos dados
 
-Os dados são originados de um processo de mineração dentro do site [IMDB.com](IMDB.com). Esse conjunto de dados possui informação de **5043 filmes**, lançados ao longo dos últimos 100 anos em 66 países. Ainda, conta com 2399 nomes de diretores e centenas de nomes de atores  atrizes.
+O conjunto de dados possui informação de **5043 filmes**, lançados ao longo dos últimos 100 anos em 66 países. Ainda, conta com 2399 nomes de diretores e centenas de nomes de atores atrizes.
 
 **As 28 variáveis disponíveis são:**
 
@@ -52,6 +59,24 @@ Os dados são originados de um processo de mineração dentro do site [IMDB.com](IM
 | genres                       	| Gênero do filme                                                                 	|
 | gross                        	| lucro bruto de bilheteria obtido pelo filme                                     	|
 | duration                     	| Duração do filme em minutos                                                     	|
+
+
+## Ferramentas utilizadas
+
+A principal ferramenta utilizada nessa análise foi a linguagem R e o ambiente RStudio.Ademais, as seguintes bibliotecas foram utilizadas.
+
+- rMarkdown
+- ggplot2
+- caTools
+- randomForest
+- dplyr
+- rpart
+- rpart.plot
+- corrplot
+
+O formato do conjunto de cados que necessitamos ler é *.csv*, o qual já possui suporte nativo do próprio R. O formato desse relatório, por sua vez, é *.rmd*, um formato que possibilita uma explicação mais bem elaborada do processo executado.
+
+Por fim, a linguagem R foi escolhida por ser a que possui bibliotecas no estado da arte no que tange a tratamentos estatísticos e criação de modelos de regressão, classificação e agrupamentos. Essa linguagem é uma "sucessora" da linguagem S e conta com a ampla adoção acadêmica e diveras bibliotecas otimizadas.
 
 ## Pré-processamento
 
@@ -89,7 +114,11 @@ imdb_data$country[imdb_data$country != "USA"] = 0
 imdb_data$country[imdb_data$country == "USA"] = 1
 imdb_data$country <- as.numeric(imdb_data$country)
 
+
 ```
+
+Nesse ponto é importante notar que com a exclusão de linhas que entradas que possuiam valores ausentes, nosso conjunto de dados foi reduzido para um universo de 3801 amostras. Ou seja, **2059 registros possuiam algum valor ausente**. 
+
 ### Particionamento dos conjunto de dados
 
 Utilizaremos dois conjuntos de dados ao longo das análises, um para treino e um para testes. Essa estratégia visa evitar *(ou ao menos identificar)* o problema de overfitting do modelo no conjunto de treino.
@@ -119,6 +148,7 @@ trainData<- trainData[sapply(trainData,is.numeric)]
 testData <- testData[sapply(testData ,is.numeric)]
 trainData <- na.exclude(trainData)
 testData <- na.exclude(testData)
+  
 ```
 
 ### Definição das Variáveis
@@ -131,7 +161,15 @@ dependent_variable = paste(goal_variable," ~ ")
 independent_variables = paste(colnames(trainData)[colnames(trainData) != goal_variable],collapse = "+")
 model_variables = paste(dependent_variable,independent_variables)
 ```
-## Visualização geral do Conjunto de Dados
+
+## Análise Exporatória
+
+
+## Estatísticas básicas:
+
+```{r estatisticaBasica}
+summary(imdb_data)
+```
 
 ### Matriz de Correlação
 
@@ -155,6 +193,12 @@ ggplot(imdb_data,aes(x=imdb_score)) + geom_histogram() + xlab("Nota no IMDB") + 
 
 A partir do histograma acima, é possível observar que a variável imdb_score segue uma distribuição normal com média aproximadamente igual 6,5. O valor que se esperava para essa média seria algo em torno de 5,0, uma vez que as notas variam de 0 a 10. Uma possível explicação para a média ter sido diferente da esperada é que o número de registros não é grande o suficiente ou que muito poucos filmes tendem a ser classificados com a nota menor que 2.
 
+
+### Outliers
+```{r outliers}
+
+```
+**A FAZER: ENCONTRAR OUTLIERS E COMENTAR SOBRE**
 
 ### Relação entre a nota IMDB e a duração do filme
 
@@ -216,6 +260,7 @@ DumbPredict = mean(trainData$imdb_score)
 SSE = sum((testData$imdb_score - DumbPredict)^2)
 RMSE = sqrt(SSE / nrow(testData))
 RMSE
+MSE = mean((testData$imdb_score - DumbPredict)^2)
 ```
 
 Este é um resultado RMSE muito ruim, o que já era esperado, pois, como o nome indica, este modelo não é adequado para fazer estimativas na maior parte dos casos em que não se tem um volume extremamente grande de dados.
@@ -225,6 +270,9 @@ Este é um resultado RMSE muito ruim, o que já era esperado, pois, como o nome in
 O modelo de Regressão Linear consiste em estimar uma variável *(chamada de variável dependente)* a partir de outra variável *(chamada de variável independente)* estimando os parâmetros da relação linear entre elas.
 
 Uma relação linear é do tipo: y(t) = ax(t) + b, onde y(t) é a variável dependente e x(t) é a variável independente.
+
+**A FAZER: EXPLICAR EM MAIS DETALHES, COMO É SOLICITADO NA PÁGINA 5 DA AVALIAÇÃO**
+
 
 ```{r ModeloLinear, echo=FALSE}
 linearModel = lm(model_variables,data=trainData)
@@ -315,13 +363,4 @@ Como esperado, o modelo de florestas aleatórias, por ser o modelo mais complexo 
 **Conclusões Modelo Floresta Aleatória**
 
 
-*Pacotes utilizados nessa análise*
 
-- rMarkdown
-- ggplot2
-- caTools
-- randomForest
-- dplyr
-- rpart
-- rpart.plot
-- corrplot
