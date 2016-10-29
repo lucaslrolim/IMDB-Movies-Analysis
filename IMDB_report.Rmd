@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 
 **Problema: É possível prever a nota IMDB de um filme antes mesmo de ele ser lançado?**
 
-Essa será a principal pergunta que irá guiar o desenvolvimento de uma análise de mais de 5000 filmes presentes no site do [IMDB](www.imdb.com). Utilizando técncias de aprendizado de máquina e estatística nós iremos não só tentar criar um **modelo de aproximação de funções* que seja capaz de responder à pergunta anterior de maneira satistatória, como também iremos criar visualizações que nos permitam entender as relações entre essas variáveis.
+Essa será a principal pergunta que irá guiar o desenvolvimento de uma análise de mais de 5000 filmes presentes no site do [IMDB](www.imdb.com). Utilizando técnicas de aprendizado de máquina e estatística nós iremos não só tentar criar um **modelo de aproximação de funções** que seja capaz de responder à pergunta anterior de maneira satistatória, como também iremos criar visualizações que nos permitam entender as relações entre essas variáveis.
 
 Esse problema é importante não só para ajudar espectadores em geral a reduzir sua taxa de decepção ao ir ao cinema, mas também se caracteriza como de suma importância para a indústria cinematrográfica em si. Filmes, antes de tudo, são investimentos. Conseguir prever se um filme será um fiasco ou um sucesso de bilheteria pode poupar milhões as produtoras de filmes e investidores.
 
@@ -21,9 +21,7 @@ Esse problema é importante não só para ajudar espectadores em geral a reduzir su
 
 ## Pesquisa Bibliográfica
 
-Os dados utilizados nessa análise foram minerados por Chuan Sun no site do IMDB e depois disponibilizados na plataforma Kaggle.Tanto o tópico desse conjunto de dados quanto uma explicação em detalhes sobre o processo de mineração podem ser encontrados nos seguintes links:
-
-- [Predict Movie Rating - NYC SCIENCE ACADEMY](https://blog.nycdatascience.com/student-works/machine-learning/movie-rating-prediction/)
+Os dados utilizados nessa análise foram minerados por Chuan Sun no site do IMDB e depois disponibilizados na plataforma Kaggle. Tanto o tópico desse conjunto de dados quanto uma explicação em detalhes sobre o processo de mineração podem ser encontrados no seguinte link:
 
 - [IMDB 5000 Movie Dataset](https://www.kaggle.com/deepmatrix/imdb-5000-movie-dataset)
 
@@ -63,7 +61,7 @@ O conjunto de dados possui informação de **5043 filmes**, lançados ao longo dos 
 
 ## Ferramentas utilizadas
 
-A principal ferramenta utilizada nessa análise foi a linguagem R e o ambiente RStudio.Ademais, as seguintes bibliotecas foram utilizadas.
+A principal ferramenta utilizada nessa análise foi a linguagem R e o ambiente RStudio. Ademais, as seguintes bibliotecas foram utilizadas.
 
 - rMarkdown
 - ggplot2
@@ -74,39 +72,55 @@ A principal ferramenta utilizada nessa análise foi a linguagem R e o ambiente RS
 - rpart.plot
 - corrplot
 
+```{r bibliotecas}
+library(dplyr)
+library(corrplot)
+library(ggplot2)
+library(caTools)
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+```
+
 O formato do conjunto de cados que necessitamos ler é *.csv*, o qual já possui suporte nativo do próprio R. O formato desse relatório, por sua vez, é *.rmd*, um formato que possibilita uma explicação mais bem elaborada do processo executado.
 
-Por fim, a linguagem R foi escolhida por ser a que possui bibliotecas no estado da arte no que tange a tratamentos estatísticos e criação de modelos de regressão, classificação e agrupamentos. Essa linguagem é uma "sucessora" da linguagem S e conta com a ampla adoção acadêmica e diveras bibliotecas otimizadas.
+Por fim, a linguagem R foi escolhida por ser a que possui bibliotecas no estado da arte no que tange a tratamentos estatísticos e criação de modelos de regressão, classificação e agrupamentos. Essa linguagem é uma "sucessora" da linguagem S e conta com a ampla adoção acadêmica e diversas bibliotecas otimizadas.
+
+
 
 ## Pré-processamento
 
-O pré-processamento de dados é um passo importante no processo de mineração de dados. Os métodos de coleta de dados, em geral, não são controlados rigorosamente, o que resulta em um conjunto de dados com valores fora do intervalo, combinações impossíveis de dados, valores ausentes etc. Desta forma, o pré-processamento é necessário para evitar que a análise dos dados produza resultados enganosos. Ele envolve limpeza de dados, normalização, transformação de variáveis, entre outros. O resultado final do pré-processamento de dados é o conjunto de treinamento final, que será utilizado para o ajuste do modelo.
+O pré-processamento de dados é um passo importante no processo de mineração de dados. Os métodos de coleta de dados, em geral, não são controlados rigorosamente, o que resulta em um conjunto de dados com valores fora do intervalo, combinações impossíveis de dados, valores ausentes etc. Desta forma, o pré-processamento é necessário para evitar que a análise dos dados produza resultados enganosos. Ela envolve limpeza de dados, normalização, transformação de variáveis, entre outros. O resultado final do pré-processamento de dados é o conjunto de treinamento final, que será utilizado para o ajuste do modelo.
 
 ### Leitura dos Dados
+
+Em primeiro lugar, vamos dar uma primeira olhada no formato do nosos conjunto de dados. Vamos verificar quais são as variáveis e seus tipos.
 
 ```{r leitura}
 imdb_data = read.csv("movie_metadata.csv",stringsAsFactors = FALSE)
 str(imdb_data)
 ```
-### Normalização dos Dados
+### Normalização dos Dados e escolha de variáveis
 
 Algumas das variáveis de texto do conjunto de dados serão convertidas em variáveis numéricas através de um critério de normalização definido pelas seguintes regras:
 
 - Se o filme foi produzido no EUA a variável **country** será 1, caso contrário será 0;
 - Se o filme foi produzido em inglês a variável **language** será 1, caso contrário será 0.
-- Todos os filmes terão a variável **director_name** substituída pela média da nota IMDB dos filmes já feitos pelo diretor no passado.
+- Criação da variável **directorIMDB**, que terá o número de filmes já feito pelo diretor.
+- Criação da variável **directorMovies**, que terá o número de filmes já feito pelo diretor do filme.
 
-Essas regras de normalização foram definidas pensando no fato da indústria cinematográfica americana ser a mais
-bem desenvolvida e com maiores orçamentos do mundo, além de produzir os maiores sucessos das últimas décadas. Logo, espera-se que filmes americanos tenham uma probabilidade maior de pontuar melhor na escala IMDB.
+Essas regras de normalização foram definidas pensando no fato da indústria cinematográfica americana ser a mais bem desenvolvida e com maiores orçamentos do mundo, além de produzir os maiores sucessos das últimas décadas. Logo, espera-se que filmes americanos tenham uma probabilidade maior de pontuar melhor na escala IMDB de maneira geral.
 
 Por fim, passaremos a considerar apenas os valores numéricos do modelo e também desconsideraremos as entradas com valores ausentes.
 
-*A normalização da variável director_name será feita apenas no após o particionamento do conjunto de dados (próximo bloco de código). Esse cuidado é necessário para que não sejam levados em conta no cálculo da média do IMDB do diretor os filmes que estão no conjunto de testes*
+*A criação das variáveis directorIMDB e directorMovies será feita após o particionamento do conjunto de dados. Esse cuidado é necessário para que não sejam levados em conta no cálculo da média do IMDB do diretor os filmes que estão no conjunto de testes*
 
 ```{r normalization }
-library(dplyr)
 
-imdb_data = na.exclude(imdb_data)
+# Essa versão do directorMovies será usada na Análise Exploratória
+directorMovies <- summarise(group_by(imdb_data,director_name),mean=mean(imdb_score),number = n())
+directorMovies <- directorMovies[2:nrow(directorMovies),]
+
 imdb_data$language[imdb_data$language !="English"] = 0
 imdb_data$language[imdb_data$language =="English"] = 1
 imdb_data$language <- as.numeric(imdb_data$language)
@@ -114,53 +128,19 @@ imdb_data$country[imdb_data$country != "USA"] = 0
 imdb_data$country[imdb_data$country == "USA"] = 1
 imdb_data$country <- as.numeric(imdb_data$country)
 
+temp <- imdb_data$director_name
+
+imdb_data <- imdb_data[sapply(imdb_data,is.numeric)]
+NoTNAIndex = complete.cases(imdb_data)
+imdb_data <- imdb_data[which(NoTNAIndex),]
+temp= temp[which((NoTNAIndex))]
 
 ```
 
-Nesse ponto é importante notar que com a exclusão de linhas que entradas que possuiam valores ausentes, nosso conjunto de dados foi reduzido para um universo de 3801 amostras. Ou seja, **2059 registros possuiam algum valor ausente**. 
+Nesse ponto é importante notar que, com a **exclusão de filmes que possuiam variáveis ausentes**, nosso conjunto de dados foi reduzido para um universo de 3801 amostras. Ou seja, **2059 registros possuiam algum valor ausente**, um total de 40% dos dados. Essa redução foi considerável, mas se faz necessária e o volume de dados restante aparenta ser grande o suficiente para não comprometer a análise. 
 
-### Particionamento dos conjunto de dados
+Por fim, após a limpezadas variáveis para apenas variáveis numéricas, restaram 18 variáveis. Lembrando que no momento de aplicação dos modelos serão adiconadas mais duas, *DirectorMovie e DirecotrIMDB*, somando um total de 20 variáveis a serem trabalhadas.
 
-Utilizaremos dois conjuntos de dados ao longo das análises, um para treino e um para testes. Essa estratégia visa evitar *(ou ao menos identificar)* o problema de overfitting do modelo no conjunto de treino.
-
-A proporção da separação foi de 70% dos dados para treino e 30% para testes. Essas proporção foi retirada da literatura.
-
-```{r split}
-library(caTools)
-set.seed(161095)
-split = sample.split(imdb_data$imdb_score,SplitRatio = 0.7)
-trainData = subset(imdb_data,split == TRUE)
-testData = subset(imdb_data,split == FALSE)
-
-# Trecho de normalização do director_name
-directorMean <-function(data){
-  data = directorHistory [which(directorHistory ==data),2]
-  data
-}
-directorHistory = summarise(group_by(trainData,director_name),mean=mean(imdb_score),number = n())
-directorIMDB = sapply(trainData$director_name,directorMean)
-trainData$director_name <- as.numeric(directorIMDB)
-directorIMDB = sapply(testData$director_name,directorMean)
-testData$director_name <- as.numeric(directorIMDB)
-# fim da normalização do director_name
-
-trainData<- trainData[sapply(trainData,is.numeric)]
-testData <- testData[sapply(testData ,is.numeric)]
-trainData <- na.exclude(trainData)
-testData <- na.exclude(testData)
-  
-```
-
-### Definição das Variáveis
-
-Nesse trecho iremos definir de maneira genérica as variáveis que serão utilizadas daqui em diante. Esse processo poupa o trabalho de reescrever código depois e também facilita a manutenção do mesmo.
-
-```{r variáveis}
-goal_variable = "imdb_score"
-dependent_variable = paste(goal_variable," ~ ")
-independent_variables = paste(colnames(trainData)[colnames(trainData) != goal_variable],collapse = "+")
-model_variables = paste(dependent_variable,independent_variables)
-```
 
 ## Análise Exporatória
 
@@ -171,11 +151,12 @@ model_variables = paste(dependent_variable,independent_variables)
 summary(imdb_data)
 ```
 
+**EXPLICAR O QUE SÃO AS MEDIDAS MIN, 1st Qu, Median, 3rd Qu. E MAX QUE SÃO EXIBIDAS**
+
 ### Matriz de Correlação
 
 ``` {r matriz de correlação}
-library(corrplot)
-corrplot(cor(trainData))
+corrplot(cor(imdb_data))
 ```
 **Variáveis com forte correlação positiva:**
 
@@ -183,14 +164,13 @@ cast_total_facebook_likes e actor_1_facebook_likes: 0,94
 movie_facebook_likes e num_critic_for_reviews: 0,70
 gross e num_voted_users: 0,63
 
-
+**COMENTAR MAIS SOBRE A MATRIZ DE CORRELAÇÃO. ORDENAR PELO MENOS AS 5 VARIÁVEIS MAIS CORRELACIONADAS E COMENTAR ALGUMA CONCLUSÃO QUE VOCÊ CHEGOU**.
 
 ### Histogramas
 
 **Notas IMDB dos filmes**
 
 ```{r HistogramaIMDB}
-library(ggplot2)
 ggplot(imdb_data,aes(x=imdb_score)) + geom_histogram() + xlab("Nota no IMDB") + ylab("Número de Filmes")
 ```
 
@@ -199,44 +179,30 @@ A partir do histograma acima, é possível observar que a variável imdb_score segu
 
 ***Transformação de Variáveis**
 
-Sabemos que nosos modelo de Regressão funciona de maneira mais precisa quando temos variáveis que seguem uma distriguição normal.Dessa forma, utilizaremos os histograma para analisar algumas variáveis que podem ser transformadas de modo a aproximar melhor esse tipo de distribuição:
+Sabemos que nosos modelo de Regressão funciona de maneira mais precisa quando temos variáveis que seguem uma Distriguição Normal. Dessa forma, utilizaremos os histograma para analisar algumas variáveis que podem ser transformadas de modo a aproximar melhor esse tipo de distribuição:
 
 ```{r HistogramasTransformação}
 
 ## num_critic_for_reviews
-
 ggplot(imdb_data,aes(x=num_critic_for_reviews))+ geom_histogram() + xlab("num_critic_for_reviews") + ylab("Número de Filmes")
 ggplot(imdb_data,aes(x=log(num_critic_for_reviews)))+ geom_histogram() + xlab("log(num_critic_for_reviews)") + ylab("Número de Filmes")
 
-
-
 ## Gross
-
 ggplot(imdb_data,aes(x=gross))+ geom_histogram() + xlab("gross") + ylab("Número de Filmes")
-
 ggplot(imdb_data,aes(x=log(gross)))+ geom_histogram() + xlab("log(gross)") + ylab("Número de Filmes")
 
-
-
 ## num_voted_users
-
 ggplot(imdb_data,aes(x=num_voted_users))+ geom_histogram() + xlab("num_voted_users") + ylab("Número de Filmes")
-
 ggplot(imdb_data,aes(x=log(num_voted_users)))+ geom_histogram() + xlab("log(num_voted_users)") + ylab("Número de Filmes")
 
 
 ## num_user_for_reviews
-
 ggplot(imdb_data,aes(x=num_user_for_reviews))+ geom_histogram() + xlab("num_user_for_reviews") + ylab("Número de Filmes")
-
 ggplot(imdb_data,aes(x=log(num_user_for_reviews)))+ geom_histogram() + xlab("log(num_user_for_reviews)") + ylab("Número de Filmes")
-
-
-
 
 ```
 
-
+Ao analisar essa variáveis percebemos que de fato a distribuição de muitas delas podem ser aproximadas por uma normal se aplicarmos o logaritmo. O problema que encontramos nesse caso é o fato de muitos valores *"infinito"* serem gerados. Logo, no momento, decidimos usar a análise com log apenas para os outliers, e não para os modelos.
 
 ### Outliers
 
@@ -269,7 +235,6 @@ boxplot(imdb_data$aspect_ratio, ylab="aspect_ratio")
 ggplot(imdb_data,aes(x=duration, y=imdb_score)) + geom_point(colour="grey60") +
   stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Nota no IMDB") + xlab("Duração do filme (minutos)")
 ```
-
 
 
 Este scatterplot mostra que a duração do filme e sua nota no IMDB apresentam uma fraca correlação positiva.
@@ -330,11 +295,85 @@ Este scatterplot mostra que o orçamento do filme e sua nota no IMDB não estão co
 ### Relação entre a nota IMDB e o Diretor
 
 ```{r IMDBvsDiretor}
-ggplot(directorHistory,aes(x=number, y=mean)) + geom_point(colour="grey60") +
+ggplot(directorMovies,aes(x=number, y=mean)) + geom_point(colour="grey60") +
   stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Nota no IMDB") + xlab("Número de filmes feitos")
 ```
 
 Este scatterplot mostra que o diretor do filme e sua nota no IMDB apresentam forte correlação positiva.
+
+### Relação entre o lucro e o orçamento
+
+```{r lucroVsOrçamento}
+ggplot(imdb_data,aes(x=budget, y=gross)) + geom_point(colour="grey60") +
+  stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Lucro") + xlab("Orçamento")
+```
+
+**ADICIONAR CONCUSÃO A ESSE GRÁFICO**
+
+### Particionamento dos conjunto de dados
+
+Utilizaremos dois conjuntos de dados ao longo das análises, um para treino e um para testes. Essa estratégia visa evitar *(ou ao menos identificar)* o problema de overfitting do modelo no conjunto de treino.
+
+A proporção da separação foi de 70% dos dados para treino e 30% para testes. Essas proporção foi retirada da literatura.
+
+```{r split}
+
+imdb_data$director_name <- temp
+
+set.seed(161095)
+split = sample.split(imdb_data$imdb_score,SplitRatio = 0.7)
+trainData = subset(imdb_data,split == TRUE)
+testData = subset(imdb_data,split == FALSE)
+
+# Trecho de criação de novas variáveis para o diretor
+
+directorMean <-function(data){
+  data = directorHistory [which(directorHistory ==data),2]
+  data
+}
+
+directorMNumber <-function(data){
+  data = directorHistory [which(directorHistory ==data),3]
+  data
+}
+
+directorHistory = summarise(group_by(trainData,director_name),mean=mean(imdb_score),number = n())
+directorIMDB =  sapply(trainData$director_name,directorMean)
+directorMovies = sapply(trainData$director_name,directorMNumber)
+trainData$directorIMDB <- as.numeric(directorIMDB)
+trainData$directorMovies <- as.numeric(directorMovies)
+
+
+directorHistory = summarise(group_by(testData,director_name),mean=mean(imdb_score),number = n())
+directorIMDB_t =  sapply(testData$director_name,directorMean)
+directorMovies_t = sapply(testData$director_name,directorMNumber)
+testData$directorIMDB <- as.numeric(directorIMDB_t)
+testData$directorMovies <- as.numeric(directorMovies_t)
+
+trainData = subset(trainData, select=-c(director_name))
+testData = subset(testData, select=-c(director_name))
+
+
+
+# fim da normalização do director_name
+
+trainData<- trainData[sapply(trainData,is.numeric)]
+testData <- testData[sapply(testData ,is.numeric)]
+trainData <- na.exclude(trainData)
+testData <- na.exclude(testData)
+  
+```
+
+### Definição das Variáveis
+
+Nesse trecho iremos definir de maneira genérica as variáveis que serão utilizadas daqui em diante. Esse processo poupa o trabalho de reescrever código depois e também facilita a manutenção do mesmo.
+
+```{r variáveis}
+goal_variable = "imdb_score"
+dependent_variable = paste(goal_variable," ~ ")
+independent_variables = paste(colnames(trainData)[colnames(trainData) != goal_variable],collapse = "+")
+model_variables = paste(dependent_variable,independent_variables)
+```
 
 ## Metodologia
 
@@ -345,7 +384,7 @@ A estratégia adotada será partir do modelo mais simples e rápido para o modelo m
 - Modelo da Árvore de Regressão;
 - Modelo de Florestas Aleatórias.
 
-Além disso, para facilitar a avaliação dos modelos, adotaremos um indicador numérico unitário de erro. O indicador escolhido será o **RMSE**. O RMSE *(root-mean-square error)* representa o desvio padrão das diferenças entre os valores estimados e os valores esperados e é calculado como a raiz quadrada do SSE *(sum of squared errors of prediction* dividido pelo número de registros.
+Além disso, para facilitar a avaliação dos modelos, adotaremos um indicador numérico unitário de erro. O indicador escolhido será o **RMSE**. O RMSE *(root-mean-square error)* representa o desvio padrão das diferenças entre os valores estimados e os valores esperados e é calculado como a raiz quadrada do SSE *(sum of squared errors of prediction* dividido pelo número de registros. O interessante desse indicador é que ele dá uma estimativa de erro na mesma escala da variável.
 
 ### Modelo "Burro"
 
@@ -356,7 +395,6 @@ DumbPredict = mean(trainData$imdb_score)
 SSE = sum((testData$imdb_score - DumbPredict)^2)
 RMSE = sqrt(SSE / nrow(testData))
 RMSE
-MSE = mean((testData$imdb_score - DumbPredict)^2)
 ```
 
 Este é um resultado RMSE muito ruim, o que já era esperado, pois, como o nome indica, este modelo não é adequado para fazer estimativas na maior parte dos casos em que não se tem um volume extremamente grande de dados.
@@ -388,15 +426,12 @@ Como esperado, o modelo de Regressão Linear obteve um resultado melhor que o mod
 O modelo da Árvore de Regressão consiste em criar uma árvore de decisão cujo resultado é um número que representa o valor estimado da variável. Os nós de decisão da árvore de regressão são formados por outras variáveis do conjunto de dados que são selecionadas pelo algoritmo.
 
 ``` {r modeloArvoreDeRegressao}
-library(rpart)
-
 set.seed(3)
 m.rpart <- rpart(imdb_score~.,data=trainData)
 m.rpart
 ```
 
 ```{r plotArvoreR}
-library(rpart.plot)
 rpart.plot(m.rpart)
 ```
 
@@ -432,8 +467,7 @@ O modelo de florestas aleatórias cria um determinado número de árvores nas quais
 
 
 ```{r ModeloFlorestaaleatória}
-library(randomForest)
-array_ntree<- c(100,200,300,400,500,600,700)
+array_ntree<- c(100,200,300,400,500,600,700,800,900)
 RMSE_vector <- c()
 for(i in array_ntree){
   set.seed(1995)
@@ -457,6 +491,3 @@ Como esperado, o modelo de florestas aleatórias, por ser o modelo mais complexo 
 
 
 **Conclusões Modelo Floresta Aleatória**
-
-
-
