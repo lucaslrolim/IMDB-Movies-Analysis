@@ -2,7 +2,10 @@
 title: "Análise  - Inteligência Computacional -  COC 361"
 author: "Lucas Rolim e Anderson Barbosa"
 date: "21 de outubro de 2016"
-output: html_document
+output:
+  html_document: default
+  word_document:
+    reference_docx: template.docx
 ---
 
 ```{r setup, include=FALSE}
@@ -151,20 +154,27 @@ Por fim, após a limpezadas variáveis para apenas variáveis numéricas, restaram 1
 summary(imdb_data)
 ```
 
-**EXPLICAR O QUE SÃO AS MEDIDAS MIN, 1st Qu, Median, 3rd Qu. E MAX QUE SÃO EXIBIDAS**
+
+**Legenda:**
+
+| Métrica  | Significado                                                       |
+|----------|-------------------------------------------------------------------|
+| Min.:    | Valor mínimo registrado da variável                               |
+| 1st Qu.  | Percentil 25, valor abaixo do qual se encontram 25% dos registros |
+| Median:  | Percentil 50, ou mediana                                          |
+| 3rd Qu.: | Percentil 75                                                      |
+| Max.:    | Valor máximo registrado da variável                               |
+
 
 ### Matriz de Correlação
 
 ``` {r matriz de correlação}
 corrplot(cor(imdb_data))
 ```
-**Variáveis com forte correlação positiva:**
 
-cast_total_facebook_likes e actor_1_facebook_likes: 0,94
-movie_facebook_likes e num_critic_for_reviews: 0,70
-gross e num_voted_users: 0,63
 
-**COMENTAR MAIS SOBRE A MATRIZ DE CORRELAÇÃO. ORDENAR PELO MENOS AS 5 VARIÁVEIS MAIS CORRELACIONADAS E COMENTAR ALGUMA CONCLUSÃO QUE VOCÊ CHEGOU**.
+
+Analisando esta matriz de correlação, é possível ver que as seguintes variáveis apresentam forte correlação positiva: **cast_total_facebook_likes** e **actor_1_facebook_likes**, o que já era esperado, pois o conjunto de curtidas de um ator é um subconjunto do conjunto de curtidas totais do elenco do filme. **movie_facebook_likes** e **num_critic_for_reviews**, indicando que o número de críticas externas que o filme recebe contribui para o seu número de curtidas no facebook **num_voted_users e num_user_for_reviews**, indicando que quanto mais usuários dão uma nota ao filme, mais usuários escrevem um crítica para ele; **Cast_total_facebook_likes** e **actor_2_facebook_likes**, que, assim como a primeira correlação, já era esperada; e **gross** e **num_voted_users**, indicando que filmes que geram uma receita maior tendem a receber mais votos de usuários do IMDB. Outra coisa interessante a ser observada, é que o orçamento (**budget**) do filme não apresenta correlação com nenhuma variável, indicando que a quantidade de dinheiro investida no filme não influencia em como o filme será recebido pelo público. 
 
 ### Histogramas
 
@@ -177,28 +187,41 @@ ggplot(imdb_data,aes(x=imdb_score)) + geom_histogram() + xlab("Nota no IMDB") + 
 
 A partir do histograma acima, é possível observar que a variável imdb_score segue uma distribuição normal com média aproximadamente igual 6,5. O valor que se esperava para essa média seria algo em torno de 5,0, uma vez que as notas variam de 0 a 10. Uma possível explicação para a média ter sido diferente da esperada é que o número de registros não é grande o suficiente ou que muito poucos filmes tendem a ser classificados com a nota menor que 2.
 
-***Transformação de Variáveis**
+
+**Outros histogramas**
+
+```{r Histogramas, echo=FALSE}
+
+## num_critic_for_reviews
+nomes=c('num_critic_for_reviews', 'duration', 'director_facebook_likes', 'actor_3_facebook_likes', 'actor_1_facebook_likes', 'gross', 'num_voted_users', 'cast_total_facebook_likes', 'facenumber_in_poster', 'num_user_for_reviews', 'language', 'country', 'budget', 'title_year', 'actor_2_facebook_likes', 'imdb_score', 'aspect_ratio', 'movie_facebook_likes')
+par(mfrow=c(3, 3))
+for (i in 1:9) {
+    hist(imdb_data[,i],  col="blue", border="white", main="", ylab="frequência", xlab=nomes[i])
+}
+for (i in 10:18) {
+  
+    if (i!=16){
+       hist(imdb_data[,i],  col="blue", border="white", main="", ylab="frequência", xlab=nomes[i])
+    }
+}
+```
+
+**Transformação de Variáveis**
 
 Sabemos que nosos modelo de Regressão funciona de maneira mais precisa quando temos variáveis que seguem uma Distriguição Normal. Dessa forma, utilizaremos os histograma para analisar algumas variáveis que podem ser transformadas de modo a aproximar melhor esse tipo de distribuição:
 
-```{r HistogramasTransformação}
+```{r HistogramasTransformação, echo=FALSE}
+
+par(mfrow=c(3, 3))
 
 ## num_critic_for_reviews
-ggplot(imdb_data,aes(x=num_critic_for_reviews))+ geom_histogram() + xlab("num_critic_for_reviews") + ylab("Número de Filmes")
-ggplot(imdb_data,aes(x=log(num_critic_for_reviews)))+ geom_histogram() + xlab("log(num_critic_for_reviews)") + ylab("Número de Filmes")
-
-## Gross
-ggplot(imdb_data,aes(x=gross))+ geom_histogram() + xlab("gross") + ylab("Número de Filmes")
-ggplot(imdb_data,aes(x=log(gross)))+ geom_histogram() + xlab("log(gross)") + ylab("Número de Filmes")
-
-## num_voted_users
-ggplot(imdb_data,aes(x=num_voted_users))+ geom_histogram() + xlab("num_voted_users") + ylab("Número de Filmes")
-ggplot(imdb_data,aes(x=log(num_voted_users)))+ geom_histogram() + xlab("log(num_voted_users)") + ylab("Número de Filmes")
-
-
-## num_user_for_reviews
-ggplot(imdb_data,aes(x=num_user_for_reviews))+ geom_histogram() + xlab("num_user_for_reviews") + ylab("Número de Filmes")
-ggplot(imdb_data,aes(x=log(num_user_for_reviews)))+ geom_histogram() + xlab("log(num_user_for_reviews)") + ylab("Número de Filmes")
+par(mfrow=c(3, 3))
+for (i in 1:9) {
+    hist(log(imdb_data[,i]),  col="blue", border="white", main="", ylab="frequência", xlab=nomes[i])
+}
+for (i in 10:18) {
+    hist(log(imdb_data[,i]),  col="blue", border="white", main="", ylab="frequência", xlab=nomes[i])
+}
 
 ```
 
@@ -206,26 +229,20 @@ Ao analisar essa variáveis percebemos que de fato a distribuição de muitas delas
 
 ### Outliers
 
+Outliers, ou valores aberrantes, são registros que apresentam uma distância muito grande dos demais. A importância da detecção e remoção destes reside no fato de que a presença deles pode levar a resultados enganosos na análise de dados.
+
 **Boxplots das variáveis**
 
 ```{r boxplot}
-boxplot(imdb_data$num_critic_for_reviews, ylab="num_critic_for_reviews")
-boxplot(imdb_data$movie_facebook_likes, ylab="movie_facebook_likes")
-boxplot(imdb_data$duration, ylab="duration")
-boxplot(imdb_data$director_facebook_likes, ylab="director_facebook_likes")
-boxplot(imdb_data$actor_3_facebook_likes, ylab="actor_3_facebook_likes")
-boxplot(imdb_data$actor_2_facebook_likes, ylab="actor_2_facebook_likes")
-boxplot(imdb_data$actor_1_facebook_likes, ylab="actor_1_facebook_likes")
-boxplot(imdb_data$gross, ylab="gross")
-boxplot(imdb_data$num_voted_users, ylab="num_voted_users")
-boxplot(imdb_data$cast_total_facebook_likes, ylab="cast_total_facebook_likes")
-boxplot(imdb_data$facenumber_in_poster, ylab="facenumber_in_poster")
-boxplot(imdb_data$num_user_for_reviews, ylab="num_user_for_reviews")
-boxplot(imdb_data$budget, ylab="budget")
-boxplot(imdb_data$imdb_score, ylab="imdb_score")
-boxplot(imdb_data$aspect_ratio, ylab="aspect_ratio")
+boxplot(imdb_data, names=c('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18'))
 ```
-**A FAZER: ENCONTRAR OUTLIERS E COMENTAR SOBRE**
+
+Para observar melhor os outliers das variáveis, plotamos os boxplots dos logaritmos das variáveis. 
+
+```{r boxplotlog, warning = FALSE}
+boxplot(log(imdb_data), names=c('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18'))
+```
+
 
 ### Relação entre a nota IMDB e a duração do filme
 
@@ -257,32 +274,33 @@ ggplot(imdb_data,aes(x=budget, y=imdb_score)) + geom_point(colour="grey60") +
   stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Nota no IMDB") + xlab("Orçamento do Filme")
 ```
 
+No scatterplot acima, observamos que os registros não estão distribuidos de maneira comportada, o que se deve à presença de outliers. Por isso, removeremos os outliers relacionados a variável budget (orçamento) e plotar novamente o gráfico.
+
 **Sem outliers**
 
-```{r IMDBvsOrçamento2}
+```{r IMDBvsOrçamento2, warning = FALSE}
 outlierKD <- function(dt, var) {
      var_name <- eval(substitute(var),eval(dt))
      na1 <- sum(is.na(var_name))
      m1 <- mean(var_name, na.rm = T)
      par(mfrow=c(2, 2), oma=c(0,0,3,0))
-     boxplot(var_name, main="With outliers")
-     hist(var_name, main="With outliers", xlab=NA, ylab=NA)
+     boxplot(var_name, main="Com outliers")
+     hist(var_name, main="Com outliers", xlab=NA, ylab=NA)
      outlier <- boxplot.stats(var_name)$out
      mo <- mean(outlier)
      var_name <- ifelse(var_name %in% outlier, NA, var_name)
-     boxplot(var_name, main="Without outliers")
-     hist(var_name, main="Without outliers", xlab=NA, ylab=NA)
-     title("Outlier Check", outer=TRUE)
+     boxplot(var_name, main="Sem outliers")
+     hist(var_name, main="Sem outliers", xlab=NA, ylab=NA)
+     title("Verificação de outliers", outer=TRUE)
      na2 <- sum(is.na(var_name))
-     cat("Outliers identified:", na2 - na1, "n")
-     cat("Propotion (%) of outliers:", round((na2 - na1) / sum(!is.na(var_name))*100, 1), "n")
-     cat("Mean of the outliers:", round(mo, 2), "n")
+     cat("Outliers identificados:", na2 - na1, "\n")
+     cat("Proporção (%) de outliers:", round((na2 - na1) / sum(!is.na(var_name))*100, 1), "\n")
+     cat("Média dos outliers:", round(mo, 2), "\n")
      m2 <- mean(var_name, na.rm = T)
-     cat("Mean without removing outliers:", round(m1, 2), "n")
-     cat("Mean if we remove outliers:", round(m2, 2), "n")
+     cat("Média sem remover outliers:", round(m1, 2), "\n")
+     cat("Média se removermos outliers:", round(m2, 2), "\n")
      dt[as.character(substitute(var))] <- invisible(var_name)
      assign(as.character(as.list(match.call())$dt), dt, envir = .GlobalEnv)
-     cat("Outliers successfully removed", "n")
      return(invisible(dt))
 }
 outlierKD(imdb_data, budget)
@@ -290,7 +308,7 @@ ggplot(imdb_data,aes(x=budget, y=imdb_score)) + geom_point(colour="grey60") +
   stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Nota no IMDB") + xlab("Orçamento do Filme")
 ```
 
-Este scatterplot mostra que o orçamento do filme e sua nota no IMDB não estão correlacionadas.
+Este novo gráfico confirma o que foi observado na matriz de correlação acima, que a nota no IMDB de um filme e seu orçamento estão descorrelacionados.
 
 ### Relação entre a nota IMDB e o Diretor
 
@@ -308,7 +326,20 @@ ggplot(imdb_data,aes(x=budget, y=gross)) + geom_point(colour="grey60") +
   stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Lucro") + xlab("Orçamento")
 ```
 
-**ADICIONAR CONCUSÃO A ESSE GRÁFICO**
+Desse gráfico não podemos inferir nenhuma conclusão clara sobre a relação entre lucro e orçamento de um filme. Os pontos fora da reta são muitos para serem considerados outliers.
+
+
+# Conclusões gerais da Análise Exploratória
+
+Ao analisar nosso conjunto de dados um primeiro aspecto que podemos notar é a grande assimetria das variáveis. A maior parte delas possui uma distribuição assimétrica e só pode de alguma forma ser comparada com uma distribuição normal quando aplicamos a função logaritmo. Essa é uma característica bem interessante e que pode ser um indicador que um processo de *feature scaling* se faz necessário para a aplicação dos modelosde regressão.
+
+Outra característica que deve ser levada em conta é a presença de um grande número de outliers em algumas variáveis, como o orçamento. Além de deixar os modelos de certa forma mais sensível, pode se fazer necessário retirar esses outliers para tornar futuras conclusões válidas.
+
+Por fim, um outro aspecto interessante que merece ser comentado é o fato de não existir uma correlação forte entre quase nenhuma das variáveis. A falta de correlação entre orçamento e lucro, como tivemos a oportunidade de verificar tanto na matriz de correlação quanto em um scatterplot, foi a mais intrigante.
+
+
+
+---
 
 ### Particionamento dos conjunto de dados
 
@@ -405,8 +436,6 @@ O modelo de Regressão Linear consiste em estimar uma variável *(chamada de variá
 
 Uma relação linear é do tipo: y(t) = ax(t) + b, onde y(t) é a variável dependente e x(t) é a variável independente.
 
-**A FAZER: EXPLICAR EM MAIS DETALHES, COMO É SOLICITADO NA PÁGINA 5 DA AVALIAÇÃO**
-
 
 ```{r ModeloLinear, echo=FALSE}
 linearModel = lm(model_variables,data=trainData)
@@ -435,7 +464,6 @@ m.rpart
 rpart.plot(m.rpart)
 ```
 
-**FAZER: EXPLICAR NÓS DE DECISÃO E HISTOGRAMAS. ALÉM DISSO, DAR NOME AOS TRECHOS DE CÓDIGO**
 
 ```{r}
 p.rpart <- predict(m.rpart,testData)
@@ -458,7 +486,7 @@ RMSE=sqrt(mean((p.rpart-testData$imdb_score)^2))
 RMSE
 ```
 
-Diferentemente do que era esperado, o modelo de árvore de regressão obteve um resultado pior do que o modelo de regressão linear, que é mais simples. Uma possível causa deste resultado é a substituição dos valores da variável *director_name*.
+Diferentemente do que era esperado, o modelo de árvore de regressão obteve um resultado pior do que o modelo de regressão linear, que é mais simples. Uma possível causa deste resultado é a sensibilidade desse modelo a outliers.
 
 
 ## Modelo de Florestas Aleatórias
@@ -488,6 +516,3 @@ ggplot(data.frame(array_ntree,RMSE_vector), aes(x=(array_ntree), y=RMSE_vector))
 ```
 
 Como esperado, o modelo de florestas aleatórias, por ser o modelo mais complexo e robusto, obteve um excelente resultado, sendo melhor do que todos os testados anteriormente.
-
-
-**Conclusões Modelo Floresta Aleatória**
