@@ -1,5 +1,5 @@
 ---
-title: "An·lise  - InteligÍncia Computacional -  COC 361"
+title: "An√°lise  - Intelig√™ncia Computacional -  COC 361"
 author: "Lucas Rolim e Anderson Barbosa"
 date: "21 de outubro de 2016"
 output:
@@ -12,59 +12,59 @@ output:
 knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 ```
 
-## DescriÁ„o do problema
+## Descri√ß√£o do problema
 
-**Problema: … possÌvel prever a nota IMDB de um filme antes mesmo de ele ser lanÁado?**
+**Problema: √â poss√≠vel prever a nota IMDB de um filme antes mesmo de ele ser lan√ßado?**
 
-Essa ser· a principal pergunta que ir· guiar o desenvolvimento de uma an·lise de mais de 5000 filmes presentes no site do [IMDB](www.imdb.com). Utilizando tÈcnicas de aprendizado de m·quina e estatÌstica nÛs iremos n„o sÛ tentar criar um **modelo de aproximaÁ„o de funÁıes** que seja capaz de responder ‡ pergunta anterior de maneira satistatÛria, como tambÈm iremos criar visualizaÁıes que nos permitam entender as relaÁıes entre essas vari·veis.
+Essa ser√° a principal pergunta que ir√° guiar o desenvolvimento de uma an√°lise de mais de 5000 filmes presentes no site do [IMDB](www.imdb.com). Utilizando t√©cnicas de aprendizado de m√°quina e estat√≠stica n√≥s iremos n√£o s√≥ tentar criar um **modelo de aproxima√ß√£o de fun√ß√µes** que seja capaz de responder √† pergunta anterior de maneira satistat√≥ria, como tamb√©m iremos criar visualiza√ß√µes que nos permitam entender as rela√ß√µes entre essas vari√°veis.
 
-Esse problema È importante n„o sÛ para ajudar espectadores em geral a reduzir sua taxa de decepÁ„o ao ir ao cinema, mas tambÈm se caracteriza como de suma import‚ncia para a ind˙stria cinematrogr·fica em si. Filmes, antes de tudo, s„o investimentos. Conseguir prever se um filme ser· um fiasco ou um sucesso de bilheteria pode poupar milhıes as produtoras de filmes e investidores.
+Esse problema √© importante n√£o s√≥ para ajudar espectadores em geral a reduzir sua taxa de decep√ß√£o ao ir ao cinema, mas tamb√©m se caracteriza como de suma import√¢ncia para a ind√∫stria cinematrogr√°fica em si. Filmes, antes de tudo, s√£o investimentos. Conseguir prever se um filme ser√° um fiasco ou um sucesso de bilheteria pode poupar milh√µes as produtoras de filmes e investidores.
 
-*Para os que desconhecem, o IMDB.com È a principal referÍncia mundial na avaliaÁ„o da qualidade de filmes. O site conta com dezenas de milhares de filmes e tambÈm com avaliaÁıes e crÌticas produzidas por centenas de milhares de usu·rios e crÌticos profissionais*
+*Para os que desconhecem, o IMDB.com √© a principal refer√™ncia mundial na avalia√ß√£o da qualidade de filmes. O site conta com dezenas de milhares de filmes e tamb√©m com avalia√ß√µes e cr√≠ticas produzidas por centenas de milhares de usu√°rios e cr√≠ticos profissionais*
 
-## Pesquisa Bibliogr·fica
+## Pesquisa Bibliogr√°fica
 
-Os dados utilizados nessa an·lise foram minerados por Chuan Sun no site do IMDB e depois disponibilizados na plataforma Kaggle. Tanto o tÛpico desse conjunto de dados quanto uma explicaÁ„o em detalhes sobre o processo de mineraÁ„o podem ser encontrados no seguinte link:
+Os dados utilizados nessa an√°lise foram minerados por Chuan Sun no site do IMDB e depois disponibilizados na plataforma Kaggle. Tanto o t√≥pico desse conjunto de dados quanto uma explica√ß√£o em detalhes sobre o processo de minera√ß√£o podem ser encontrados no seguinte link:
 
 - [IMDB 5000 Movie Dataset](https://www.kaggle.com/deepmatrix/imdb-5000-movie-dataset)
 
-## DescriÁ„o dos dados
+## Descri√ß√£o dos dados
 
-O conjunto de dados possui informaÁ„o de **5043 filmes**, lanÁados ao longo dos ˙ltimos 100 anos em 66 paÌses. Ainda, conta com 2399 nomes de diretores e centenas de nomes de atores atrizes.
+O conjunto de dados possui informa√ß√£o de **5043 filmes**, lan√ßados ao longo dos √∫ltimos 100 anos em 66 pa√≠ses. Ainda, conta com 2399 nomes de diretores e centenas de nomes de atores atrizes.
 
-**As 28 vari·veis disponÌveis s„o:**
+**As 28 vari√°veis dispon√≠veis s√£o:**
 
-| Vari·vel                     	| Significado                                                                     	|
+| Vari√°vel                     	| Significado                                                                     	|
 |------------------------------	|---------------------------------------------------------------------------------	|
 | color                        	| ?                                                                               	|
-| num_voted_users              	| N˙mero de usu·rios que deram uma classificaÁ„o ao filme no site do IMDB         	|
-| cast_total_facebook_likes    	| N˙mero total de curtidas de toda p·gina do elenco no Facebook                   	|
-| facenumber_in_poster         	| N˙mero de faces humanas que aparecem  no poster do filme                        	|
+| num_voted_users              	| N√∫mero de usu√°rios que deram uma classifica√ß√£o ao filme no site do IMDB         	|
+| cast_total_facebook_likes    	| N√∫mero total de curtidas de toda p√°gina do elenco no Facebook                   	|
+| facenumber_in_poster         	| N√∫mero de faces humanas que aparecem  no poster do filme                        	|
 | plot_keywords                	| Palavras-chave da trama                                                         	|
-| movie_imdb_link              	| EndereÁo da p·gina do filme no IMDB                                             	|
-| num_user_for_reviews         	| N˙mero de crÌticas de usu·rios do IMDB                                          	|
+| movie_imdb_link              	| Endere√ßo da p√°gina do filme no IMDB                                             	|
+| num_user_for_reviews         	| N√∫mero de cr√≠ticas de usu√°rios do IMDB                                          	|
 | language                     	| Idioma do filme                                                                 	|
-| country                      	| PaÌs em que o filme foi produzido                                               	|
-| content_rating               	| AvaliaÁ„o do conte˙do                                                           	|
-| budget                       	| OrÁamento do filme                                                              	|
-| title_year                   	| Ano de lanÁamento do filme                                                      	|
+| country                      	| Pa√≠s em que o filme foi produzido                                               	|
+| content_rating               	| Avalia√ß√£o do conte√∫do                                                           	|
+| budget                       	| Or√ßamento do filme                                                              	|
+| title_year                   	| Ano de lan√ßamento do filme                                                      	|
 | imdb_score                   	| Nota do filme no IMDB                                                           	|
 | aspect_ratio                 	| ?                                                                               	|
-| movie_facebook_likes         	| N˙mero de curtidas da p·gina do filme no Facebook                               	|
+| movie_facebook_likes         	| N√∫mero de curtidas da p√°gina do filme no Facebook                               	|
 | director_name                	| Nome do diretor do filme                                                        	|
-| num_critic_for_reviews       	| N˙mero de crÌticas externas ao IMDB                                             	|
-| actor_(1,2,3)_name           	| Nomes dos trÍs principais atores do filme                                       	|
-| movie_title                  	| TÌtulo do filme                                                                 	|
-| actor_(1,2,3)_facebook_likes 	| N˙meros de curtidas das p·ginas dos trÍs principais atores do filme no Facebook 	|
-| director_facebook_likes      	| N˙mero de curtidas da p·gina do diretor no Facebook                             	|
-| genres                       	| GÍnero do filme                                                                 	|
+| num_critic_for_reviews       	| N√∫mero de cr√≠ticas externas ao IMDB                                             	|
+| actor_(1,2,3)_name           	| Nomes dos tr√™s principais atores do filme                                       	|
+| movie_title                  	| T√≠tulo do filme                                                                 	|
+| actor_(1,2,3)_facebook_likes 	| N√∫meros de curtidas das p√°ginas dos tr√™s principais atores do filme no Facebook 	|
+| director_facebook_likes      	| N√∫mero de curtidas da p√°gina do diretor no Facebook                             	|
+| genres                       	| G√™nero do filme                                                                 	|
 | gross                        	| lucro bruto de bilheteria obtido pelo filme                                     	|
-| duration                     	| DuraÁ„o do filme em minutos                                                     	|
+| duration                     	| Dura√ß√£o do filme em minutos                                                     	|
 
 
 ## Ferramentas utilizadas
 
-A principal ferramenta utilizada nessa an·lise foi a linguagem R e o ambiente RStudio. Ademais, as seguintes bibliotecas foram utilizadas.
+A principal ferramenta utilizada nessa an√°lise foi a linguagem R e o ambiente RStudio. Ademais, as seguintes bibliotecas foram utilizadas.
 
 - rMarkdown
 - ggplot2
@@ -74,6 +74,9 @@ A principal ferramenta utilizada nessa an·lise foi a linguagem R e o ambiente RS
 - rpart
 - rpart.plot
 - corrplot
+- neuralnet
+- caTools
+
 
 ```{r bibliotecas}
 library(dplyr)
@@ -83,44 +86,46 @@ library(caTools)
 library(rpart)
 library(rpart.plot)
 library(randomForest)
+library(neuralnet)
+library(caTools)
 ```
 
-O formato do conjunto de cados que necessitamos ler È *.csv*, o qual j· possui suporte nativo do prÛprio R. O formato desse relatÛrio, por sua vez, È *.rmd*, um formato que possibilita uma explicaÁ„o mais bem elaborada do processo executado.
+O formato do conjunto de cados que necessitamos ler √© *.csv*, o qual j√° possui suporte nativo do pr√≥prio R. O formato desse relat√≥rio, por sua vez, √© *.rmd*, um formato que possibilita uma explica√ß√£o mais bem elaborada do processo executado.
 
-Por fim, a linguagem R foi escolhida por ser a que possui bibliotecas no estado da arte no que tange a tratamentos estatÌsticos e criaÁ„o de modelos de regress„o, classificaÁ„o e agrupamentos. Essa linguagem È uma "sucessora" da linguagem S e conta com a ampla adoÁ„o acadÍmica e diversas bibliotecas otimizadas.
+Por fim, a linguagem R foi escolhida por ser a que possui bibliotecas no estado da arte no que tange a tratamentos estat√≠sticos e cria√ß√£o de modelos de regress√£o, classifica√ß√£o e agrupamentos. Essa linguagem √© uma "sucessora" da linguagem S e conta com a ampla ado√ß√£o acad√™mica e diversas bibliotecas otimizadas.
 
 
 
-## PrÈ-processamento
+## Pr√©-processamento
 
-O prÈ-processamento de dados È um passo importante no processo de mineraÁ„o de dados. Os mÈtodos de coleta de dados, em geral, n„o s„o controlados rigorosamente, o que resulta em um conjunto de dados com valores fora do intervalo, combinaÁıes impossÌveis de dados, valores ausentes etc. Desta forma, o prÈ-processamento È necess·rio para evitar que a an·lise dos dados produza resultados enganosos. Ela envolve limpeza de dados, normalizaÁ„o, transformaÁ„o de vari·veis, entre outros. O resultado final do prÈ-processamento de dados È o conjunto de treinamento final, que ser· utilizado para o ajuste do modelo.
+O pr√©-processamento de dados √© um passo importante no processo de minera√ß√£o de dados. Os m√©todos de coleta de dados, em geral, n√£o s√£o controlados rigorosamente, o que resulta em um conjunto de dados com valores fora do intervalo, combina√ß√µes imposs√≠veis de dados, valores ausentes etc. Desta forma, o pr√©-processamento √© necess√°rio para evitar que a an√°lise dos dados produza resultados enganosos. Ela envolve limpeza de dados, normaliza√ß√£o, transforma√ß√£o de vari√°veis, entre outros. O resultado final do pr√©-processamento de dados √© o conjunto de treinamento final, que ser√° utilizado para o ajuste do modelo.
 
 ### Leitura dos Dados
 
-Em primeiro lugar, vamos dar uma primeira olhada no formato do nosos conjunto de dados. Vamos verificar quais s„o as vari·veis e seus tipos.
+Em primeiro lugar, vamos dar uma primeira olhada no formato do nosos conjunto de dados. Vamos verificar quais s√£o as vari√°veis e seus tipos.
 
 ```{r leitura}
 imdb_data = read.csv("movie_metadata.csv",stringsAsFactors = FALSE)
 str(imdb_data)
 ```
-### NormalizaÁ„o dos Dados e escolha de vari·veis
+### Normaliza√ß√£o dos Dados e escolha de vari√°veis
 
-Algumas das vari·veis de texto do conjunto de dados ser„o convertidas em vari·veis numÈricas atravÈs de um critÈrio de normalizaÁ„o definido pelas seguintes regras:
+Algumas das vari√°veis de texto do conjunto de dados ser√£o convertidas em vari√°veis num√©ricas atrav√©s de um crit√©rio de normaliza√ß√£o definido pelas seguintes regras:
 
-- Se o filme foi produzido no EUA a vari·vel **country** ser· 1, caso contr·rio ser· 0;
-- Se o filme foi produzido em inglÍs a vari·vel **language** ser· 1, caso contr·rio ser· 0.
-- CriaÁ„o da vari·vel **directorIMDB**, que ter· o n˙mero de filmes j· feito pelo diretor.
-- CriaÁ„o da vari·vel **directorMovies**, que ter· o n˙mero de filmes j· feito pelo diretor do filme.
+- Se o filme foi produzido no EUA a vari√°vel **country** ser√° 1, caso contr√°rio ser√° 0;
+- Se o filme foi produzido em ingl√™s a vari√°vel **language** ser√° 1, caso contr√°rio ser√° 0.
+- Cria√ß√£o da vari√°vel **directorIMDB**, que ter√° o n√∫mero de filmes j√° feito pelo diretor.
+- Cria√ß√£o da vari√°vel **directorMovies**, que ter√° o n√∫mero de filmes j√° feito pelo diretor do filme.
 
-Essas regras de normalizaÁ„o foram definidas pensando no fato da ind˙stria cinematogr·fica americana ser a mais bem desenvolvida e com maiores orÁamentos do mundo, alÈm de produzir os maiores sucessos das ˙ltimas dÈcadas. Logo, espera-se que filmes americanos tenham uma probabilidade maior de pontuar melhor na escala IMDB de maneira geral.
+Essas regras de normaliza√ß√£o foram definidas pensando no fato da ind√∫stria cinematogr√°fica americana ser a mais bem desenvolvida e com maiores or√ßamentos do mundo, al√©m de produzir os maiores sucessos das √∫ltimas d√©cadas. Logo, espera-se que filmes americanos tenham uma probabilidade maior de pontuar melhor na escala IMDB de maneira geral.
 
-Por fim, passaremos a considerar apenas os valores numÈricos do modelo e tambÈm desconsideraremos as entradas com valores ausentes.
+Por fim, passaremos a considerar apenas os valores num√©ricos do modelo e tamb√©m desconsideraremos as entradas com valores ausentes.
 
-*A criaÁ„o das vari·veis directorIMDB e directorMovies ser· feita apÛs o particionamento do conjunto de dados. Esse cuidado È necess·rio para que n„o sejam levados em conta no c·lculo da mÈdia do IMDB do diretor os filmes que est„o no conjunto de testes*
+*A cria√ß√£o das vari√°veis directorIMDB e directorMovies ser√° feita ap√≥s o particionamento do conjunto de dados. Esse cuidado √© necess√°rio para que n√£o sejam levados em conta no c√°lculo da m√©dia do IMDB do diretor os filmes que est√£o no conjunto de testes*
 
 ```{r normalization }
 
-# Essa vers„o do directorMovies ser· usada na An·lise ExploratÛria
+# Essa vers√£o do directorMovies ser√° usada na An√°lise Explorat√≥ria
 directorMovies <- summarise(group_by(imdb_data,director_name),mean=mean(imdb_score),number = n())
 directorMovies <- directorMovies[2:nrow(directorMovies),]
 
@@ -140,15 +145,15 @@ temp= temp[which((NoTNAIndex))]
 
 ```
 
-Nesse ponto È importante notar que, com a **exclus„o de filmes que possuiam vari·veis ausentes**, nosso conjunto de dados foi reduzido para um universo de 3801 amostras. Ou seja, **2059 registros possuiam algum valor ausente**, um total de 40% dos dados. Essa reduÁ„o foi consider·vel, mas se faz necess·ria e o volume de dados restante aparenta ser grande o suficiente para n„o comprometer a an·lise. 
+Nesse ponto √© importante notar que, com a **exclus√£o de filmes que possuiam vari√°veis ausentes**, nosso conjunto de dados foi reduzido para um universo de 3801 amostras. Ou seja, **2059 registros possuiam algum valor ausente**, um total de 40% dos dados. Essa redu√ß√£o foi consider√°vel, mas se faz necess√°ria e o volume de dados restante aparenta ser grande o suficiente para n√£o comprometer a an√°lise. 
 
-Por fim, apÛs a limpezadas vari·veis para apenas vari·veis numÈricas, restaram 18 vari·veis. Lembrando que no momento de aplicaÁ„o dos modelos ser„o adiconadas mais duas, *DirectorMovie e DirecotrIMDB*, somando um total de 20 vari·veis a serem trabalhadas.
-
-
-## An·lise ExporatÛria
+Por fim, ap√≥s a limpezadas vari√°veis para apenas vari√°veis num√©ricas, restaram 18 vari√°veis. Lembrando que no momento de aplica√ß√£o dos modelos ser√£o adiconadas mais duas, *DirectorMovie e DirecotrIMDB*, somando um total de 20 vari√°veis a serem trabalhadas.
 
 
-## EstatÌsticas b·sicas:
+## An√°lise Exporat√≥ria
+
+
+## Estat√≠sticas b√°sicas:
 
 ```{r estatisticaBasica}
 summary(imdb_data)
@@ -157,35 +162,35 @@ summary(imdb_data)
 
 **Legenda:**
 
-| MÈtrica  | Significado                                                       |
+| M√©trica  | Significado                                                       |
 |----------|-------------------------------------------------------------------|
-| Min.:    | Valor mÌnimo registrado da vari·vel                               |
+| Min.:    | Valor m√≠nimo registrado da vari√°vel                               |
 | 1st Qu.  | Percentil 25, valor abaixo do qual se encontram 25% dos registros |
 | Median:  | Percentil 50, ou mediana                                          |
 | 3rd Qu.: | Percentil 75                                                      |
-| Max.:    | Valor m·ximo registrado da vari·vel                               |
+| Max.:    | Valor m√°ximo registrado da vari√°vel                               |
 
 
-### Matriz de CorrelaÁ„o
+### Matriz de Correla√ß√£o
 
-``` {r matriz de correlaÁ„o}
+``` {r matriz de correla√ß√£o}
 corrplot(cor(imdb_data))
 ```
 
 
 
-Analisando esta matriz de correlaÁ„o, È possÌvel ver que as seguintes vari·veis apresentam forte correlaÁ„o positiva: **cast_total_facebook_likes** e **actor_1_facebook_likes**, o que j· era esperado, pois o conjunto de curtidas de um ator È um subconjunto do conjunto de curtidas totais do elenco do filme. **movie_facebook_likes** e **num_critic_for_reviews**, indicando que o n˙mero de crÌticas externas que o filme recebe contribui para o seu n˙mero de curtidas no facebook **num_voted_users e num_user_for_reviews**, indicando que quanto mais usu·rios d„o uma nota ao filme, mais usu·rios escrevem um crÌtica para ele; **Cast_total_facebook_likes** e **actor_2_facebook_likes**, que, assim como a primeira correlaÁ„o, j· era esperada; e **gross** e **num_voted_users**, indicando que filmes que geram uma receita maior tendem a receber mais votos de usu·rios do IMDB. Outra coisa interessante a ser observada, È que o orÁamento (**budget**) do filme n„o apresenta correlaÁ„o com nenhuma vari·vel, indicando que a quantidade de dinheiro investida no filme n„o influencia em como o filme ser· recebido pelo p˙blico. 
+Analisando esta matriz de correla√ß√£o, √© poss√≠vel ver que as seguintes vari√°veis apresentam forte correla√ß√£o positiva: **cast_total_facebook_likes** e **actor_1_facebook_likes**, o que j√° era esperado, pois o conjunto de curtidas de um ator √© um subconjunto do conjunto de curtidas totais do elenco do filme. **movie_facebook_likes** e **num_critic_for_reviews**, indicando que o n√∫mero de cr√≠ticas externas que o filme recebe contribui para o seu n√∫mero de curtidas no facebook **num_voted_users e num_user_for_reviews**, indicando que quanto mais usu√°rios d√£o uma nota ao filme, mais usu√°rios escrevem um cr√≠tica para ele; **Cast_total_facebook_likes** e **actor_2_facebook_likes**, que, assim como a primeira correla√ß√£o, j√° era esperada; e **gross** e **num_voted_users**, indicando que filmes que geram uma receita maior tendem a receber mais votos de usu√°rios do IMDB. Outra coisa interessante a ser observada, √© que o or√ßamento (**budget**) do filme n√£o apresenta correla√ß√£o com nenhuma vari√°vel, indicando que a quantidade de dinheiro investida no filme n√£o influencia em como o filme ser√° recebido pelo p√∫blico. 
 
 ### Histogramas
 
 **Notas IMDB dos filmes**
 
 ```{r HistogramaIMDB}
-ggplot(imdb_data,aes(x=imdb_score)) + geom_histogram() + xlab("Nota no IMDB") + ylab("N˙mero de Filmes")
+ggplot(imdb_data,aes(x=imdb_score)) + geom_histogram() + xlab("Nota no IMDB") + ylab("N√∫mero de Filmes")
 ```
 
 
-A partir do histograma acima, È possÌvel observar que a vari·vel imdb_score segue uma distribuiÁ„o normal com mÈdia aproximadamente igual 6,5. O valor que se esperava para essa mÈdia seria algo em torno de 5,0, uma vez que as notas variam de 0 a 10. Uma possÌvel explicaÁ„o para a mÈdia ter sido diferente da esperada È que o n˙mero de registros n„o È grande o suficiente ou que muito poucos filmes tendem a ser classificados com a nota menor que 2.
+A partir do histograma acima, √© poss√≠vel observar que a vari√°vel imdb_score segue uma distribui√ß√£o normal com m√©dia aproximadamente igual 6,5. O valor que se esperava para essa m√©dia seria algo em torno de 5,0, uma vez que as notas variam de 0 a 10. Uma poss√≠vel explica√ß√£o para a m√©dia ter sido diferente da esperada √© que o n√∫mero de registros n√£o √© grande o suficiente ou que muito poucos filmes tendem a ser classificados com a nota menor que 2.
 
 
 **Outros histogramas**
@@ -196,89 +201,89 @@ A partir do histograma acima, È possÌvel observar que a vari·vel imdb_score segu
 nomes=c('num_critic_for_reviews', 'duration', 'director_facebook_likes', 'actor_3_facebook_likes', 'actor_1_facebook_likes', 'gross', 'num_voted_users', 'cast_total_facebook_likes', 'facenumber_in_poster', 'num_user_for_reviews', 'language', 'country', 'budget', 'title_year', 'actor_2_facebook_likes', 'imdb_score', 'aspect_ratio', 'movie_facebook_likes')
 par(mfrow=c(3, 3))
 for (i in 1:9) {
-    hist(imdb_data[,i],  col="blue", border="white", main="", ylab="frequÍncia", xlab=nomes[i])
+    hist(imdb_data[,i],  col="blue", border="white", main="", ylab="frequ√™ncia", xlab=nomes[i])
 }
 for (i in 10:18) {
   
     if (i!=16){
-       hist(imdb_data[,i],  col="blue", border="white", main="", ylab="frequÍncia", xlab=nomes[i])
+       hist(imdb_data[,i],  col="blue", border="white", main="", ylab="frequ√™ncia", xlab=nomes[i])
     }
 }
 ```
 
-**TransformaÁ„o de Vari·veis**
+**Transforma√ß√£o de Vari√°veis**
 
-Sabemos que nosos modelo de Regress„o funciona de maneira mais precisa quando temos vari·veis que seguem uma DistriguiÁ„o Normal. Dessa forma, utilizaremos os histograma para analisar algumas vari·veis que podem ser transformadas de modo a aproximar melhor esse tipo de distribuiÁ„o:
+Sabemos que nosos modelo de Regress√£o funciona de maneira mais precisa quando temos vari√°veis que seguem uma Distrigui√ß√£o Normal. Dessa forma, utilizaremos os histograma para analisar algumas vari√°veis que podem ser transformadas de modo a aproximar melhor esse tipo de distribui√ß√£o:
 
-```{r HistogramasTransformaÁ„o, echo=FALSE}
+```{r HistogramasTransforma√ß√£o, echo=FALSE}
 
 par(mfrow=c(3, 3))
 
 ## num_critic_for_reviews
 par(mfrow=c(3, 3))
 for (i in 1:9) {
-    hist(log(imdb_data[,i]),  col="blue", border="white", main="", ylab="frequÍncia", xlab=nomes[i])
+    hist(log(imdb_data[,i]),  col="blue", border="white", main="", ylab="frequ√™ncia", xlab=nomes[i])
 }
 for (i in 10:18) {
-    hist(log(imdb_data[,i]),  col="blue", border="white", main="", ylab="frequÍncia", xlab=nomes[i])
+    hist(log(imdb_data[,i]),  col="blue", border="white", main="", ylab="frequ√™ncia", xlab=nomes[i])
 }
 
 ```
 
-Ao analisar essa vari·veis percebemos que de fato a distribuiÁ„o de muitas delas podem ser aproximadas por uma normal se aplicarmos o logaritmo. O problema que encontramos nesse caso È o fato de muitos valores *"infinito"* serem gerados. Logo, no momento, decidimos usar a an·lise com log apenas para os outliers, e n„o para os modelos.
+Ao analisar essa vari√°veis percebemos que de fato a distribui√ß√£o de muitas delas podem ser aproximadas por uma normal se aplicarmos o logaritmo. O problema que encontramos nesse caso √© o fato de muitos valores *"infinito"* serem gerados. Logo, no momento, decidimos usar a an√°lise com log apenas para os outliers, e n√£o para os modelos.
 
 ### Outliers
 
-Outliers, ou valores aberrantes, s„o registros que apresentam uma dist‚ncia muito grande dos demais. A import‚ncia da detecÁ„o e remoÁ„o destes reside no fato de que a presenÁa deles pode levar a resultados enganosos na an·lise de dados.
+Outliers, ou valores aberrantes, s√£o registros que apresentam uma dist√¢ncia muito grande dos demais. A import√¢ncia da detec√ß√£o e remo√ß√£o destes reside no fato de que a presen√ßa deles pode levar a resultados enganosos na an√°lise de dados.
 
-**Boxplots das vari·veis**
+**Boxplots das vari√°veis**
 
 ```{r boxplot}
 boxplot(imdb_data, names=c('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18'))
 ```
 
-Para observar melhor os outliers das vari·veis, plotamos os boxplots dos logaritmos das vari·veis. 
+Para observar melhor os outliers das vari√°veis, plotamos os boxplots dos logaritmos das vari√°veis. 
 
 ```{r boxplotlog, warning = FALSE}
 boxplot(log(imdb_data), names=c('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18'))
 ```
 
 
-### RelaÁ„o entre a nota IMDB e a duraÁ„o do filme
+### Rela√ß√£o entre a nota IMDB e a dura√ß√£o do filme
 
 
-```{r IMDBvsDuraÁ„o}
+```{r IMDBvsDura√ß√£o}
 
 ggplot(imdb_data,aes(x=duration, y=imdb_score)) + geom_point(colour="grey60") +
-  stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Nota no IMDB") + xlab("DuraÁ„o do filme (minutos)")
+  stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Nota no IMDB") + xlab("Dura√ß√£o do filme (minutos)")
 ```
 
 
-Este scatterplot mostra que a duraÁ„o do filme e sua nota no IMDB apresentam uma fraca correlaÁ„o positiva.
+Este scatterplot mostra que a dura√ß√£o do filme e sua nota no IMDB apresentam uma fraca correla√ß√£o positiva.
 
-### RelaÁ„o entre a nota IMDB e o lucro
+### Rela√ß√£o entre a nota IMDB e o lucro
 
 ```{r IMDBvsLucro}
 ggplot(imdb_data,aes(x=gross, y=imdb_score)) + geom_point(colour="grey60") +
   stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Nota no IMDB") + xlab("Lucro do Filme")
 ```
 
-Este scatterplot, assim como o anterior, mostra que o lucro obtido pelo filme e sua nota no IMDB apresentam uma fraca correlaÁ„o positiva.
+Este scatterplot, assim como o anterior, mostra que o lucro obtido pelo filme e sua nota no IMDB apresentam uma fraca correla√ß√£o positiva.
 
-### RelaÁ„o entre a nota IMDB e orÁamento
+### Rela√ß√£o entre a nota IMDB e or√ßamento
 
 **Com outliers**
 
-```{r IMDBvsOrÁamento}
+```{r IMDBvsOr√ßamento}
 ggplot(imdb_data,aes(x=budget, y=imdb_score)) + geom_point(colour="grey60") +
-  stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Nota no IMDB") + xlab("OrÁamento do Filme")
+  stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Nota no IMDB") + xlab("Or√ßamento do Filme")
 ```
 
-No scatterplot acima, observamos que os registros n„o est„o distribuidos de maneira comportada, o que se deve ‡ presenÁa de outliers. Por isso, removeremos os outliers relacionados a vari·vel budget (orÁamento) e plotar novamente o gr·fico.
+No scatterplot acima, observamos que os registros n√£o est√£o distribuidos de maneira comportada, o que se deve √† presen√ßa de outliers. Por isso, removeremos os outliers relacionados a vari√°vel budget (or√ßamento) e plotar novamente o gr√°fico.
 
 **Sem outliers**
 
-```{r IMDBvsOrÁamento2, warning = FALSE}
+```{r IMDBvsOr√ßamento2, warning = FALSE}
 outlierKD <- function(dt, var) {
      var_name <- eval(substitute(var),eval(dt))
      na1 <- sum(is.na(var_name))
@@ -291,61 +296,73 @@ outlierKD <- function(dt, var) {
      var_name <- ifelse(var_name %in% outlier, NA, var_name)
      boxplot(var_name, main="Sem outliers")
      hist(var_name, main="Sem outliers", xlab=NA, ylab=NA)
-     title("VerificaÁ„o de outliers", outer=TRUE)
+     title("Verifica√ß√£o de outliers", outer=TRUE)
      na2 <- sum(is.na(var_name))
      cat("Outliers identificados:", na2 - na1, "\n")
-     cat("ProporÁ„o (%) de outliers:", round((na2 - na1) / sum(!is.na(var_name))*100, 1), "\n")
-     cat("MÈdia dos outliers:", round(mo, 2), "\n")
+     cat("Propor√ß√£o (%) de outliers:", round((na2 - na1) / sum(!is.na(var_name))*100, 1), "\n")
+     cat("M√©dia dos outliers:", round(mo, 2), "\n")
      m2 <- mean(var_name, na.rm = T)
-     cat("MÈdia sem remover outliers:", round(m1, 2), "\n")
-     cat("MÈdia se removermos outliers:", round(m2, 2), "\n")
+     cat("M√©dia sem remover outliers:", round(m1, 2), "\n")
+     cat("M√©dia se removermos outliers:", round(m2, 2), "\n")
      dt[as.character(substitute(var))] <- invisible(var_name)
      assign(as.character(as.list(match.call())$dt), dt, envir = .GlobalEnv)
      return(invisible(dt))
 }
 outlierKD(imdb_data, budget)
 ggplot(imdb_data,aes(x=budget, y=imdb_score)) + geom_point(colour="grey60") +
-  stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Nota no IMDB") + xlab("OrÁamento do Filme")
+  stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Nota no IMDB") + xlab("Or√ßamento do Filme")
 ```
 
-Este novo gr·fico confirma o que foi observado na matriz de correlaÁ„o acima, que a nota no IMDB de um filme e seu orÁamento est„o descorrelacionados.
+Este novo gr√°fico confirma o que foi observado na matriz de correla√ß√£o acima, que a nota no IMDB de um filme e seu or√ßamento est√£o descorrelacionados.
 
-### RelaÁ„o entre a nota IMDB e o Diretor
+### Rela√ß√£o entre a nota IMDB e o Diretor
 
 ```{r IMDBvsDiretor}
 ggplot(directorMovies,aes(x=number, y=mean)) + geom_point(colour="grey60") +
-  stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Nota no IMDB") + xlab("N˙mero de filmes feitos")
+  stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Nota no IMDB") + xlab("N√∫mero de filmes feitos")
 ```
 
-Este scatterplot mostra que o diretor do filme e sua nota no IMDB apresentam forte correlaÁ„o positiva.
+Este scatterplot mostra que o diretor do filme e sua nota no IMDB apresentam forte correla√ß√£o positiva.
 
-### RelaÁ„o entre o lucro e o orÁamento
+### Rela√ß√£o entre o lucro e o or√ßamento
 
-```{r lucroVsOrÁamento}
+```{r lucroVsOr√ßamento}
 ggplot(imdb_data,aes(x=budget, y=gross)) + geom_point(colour="grey60") +
-  stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Lucro") + xlab("OrÁamento")
+  stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Lucro") + xlab("Or√ßamento")
 ```
 
-Desse gr·fico n„o podemos inferir nenhuma conclus„o clara sobre a relaÁ„o entre lucro e orÁamento de um filme. Os pontos fora da reta s„o muitos para serem considerados outliers.
+Desse gr√°fico n√£o podemos inferir nenhuma conclus√£o clara sobre a rela√ß√£o entre lucro e or√ßamento de um filme. Os pontos fora da reta s√£o muitos para serem considerados outliers.
 
 
-# Conclusıes gerais da An·lise ExploratÛria
 
-Ao analisar nosso conjunto de dados um primeiro aspecto que podemos notar È a grande assimetria das vari·veis. A maior parte delas possui uma distribuiÁ„o assimÈtrica e sÛ pode de alguma forma ser comparada com uma distribuiÁ„o normal quando aplicamos a funÁ„o logaritmo. Essa È uma caracterÌstica bem interessante e que pode ser um indicador que um processo de *feature scaling* se faz necess·rio para a aplicaÁ„o dos modelosde regress„o.
+## Conclus√µes gerais da An√°lise Explorat√≥ria
 
-Outra caracterÌstica que deve ser levada em conta È a presenÁa de um grande n˙mero de outliers em algumas vari·veis, como o orÁamento. AlÈm de deixar os modelos de certa forma mais sensÌvel, pode se fazer necess·rio retirar esses outliers para tornar futuras conclusıes v·lidas.
+Ao analisar nosso conjunto de dados um primeiro aspecto que podemos notar √© a grande assimetria das vari√°veis. A maior parte delas possui uma distribui√ß√£o assim√©trica e s√≥ pode de alguma forma ser comparada com uma distribui√ß√£o normal quando aplicamos a fun√ß√£o logaritmo. Essa √© uma caracter√≠stica bem interessante e que pode ser um indicador que um processo de *feature scaling* se faz necess√°rio para a aplica√ß√£o dos modelosde regress√£o.
 
-Por fim, um outro aspecto interessante que merece ser comentado È o fato de n„o existir uma correlaÁ„o forte entre quase nenhuma das vari·veis. A falta de correlaÁ„o entre orÁamento e lucro, como tivemos a oportunidade de verificar tanto na matriz de correlaÁ„o quanto em um scatterplot, foi a mais intrigante.
+Outra caracter√≠stica que deve ser levada em conta √© a presen√ßa de um grande n√∫mero de outliers em algumas vari√°veis, como o or√ßamento. Al√©m de deixar os modelos de certa forma mais sens√≠vel, pode se fazer necess√°rio retirar esses outliers para tornar futuras conclus√µes v√°lidas.
+
+Por fim, um outro aspecto interessante que merece ser comentado √© o fato de n√£o existir uma correla√ß√£o forte entre quase nenhuma das vari√°veis. A falta de correla√ß√£o entre or√ßamento e lucro, como tivemos a oportunidade de verificar tanto na matriz de correla√ß√£o quanto em um scatterplot, foi a mais intrigante.
 
 
 
 ---
 
+### Ajuste de Escala
+
+**EXPLICAR**
+
+```{r scale}
+maxs <- apply(imdb_data, 2, max) 
+mins <- apply(imdb_data, 2, min)
+imdb_data<- as.data.frame(scale(imdb_data, center = mins, scale = maxs - mins))
+
+
+```
 ### Particionamento dos conjunto de dados
 
-Utilizaremos dois conjuntos de dados ao longo das an·lises, um para treino e um para testes. Essa estratÈgia visa evitar *(ou ao menos identificar)* o problema de overfitting do modelo no conjunto de treino.
+Utilizaremos dois conjuntos de dados ao longo das an√°lises, um para treino e um para testes. Essa estrat√©gia visa evitar *(ou ao menos identificar)* o problema de overfitting do modelo no conjunto de treino.
 
-A proporÁ„o da separaÁ„o foi de 70% dos dados para treino e 30% para testes. Essas proporÁ„o foi retirada da literatura.
+A propor√ß√£o da separa√ß√£o foi de 70% dos dados para treino e 30% para testes. Essas propor√ß√£o foi retirada da literatura.
 
 ```{r split}
 
@@ -356,7 +373,7 @@ split = sample.split(imdb_data$imdb_score,SplitRatio = 0.7)
 trainData = subset(imdb_data,split == TRUE)
 testData = subset(imdb_data,split == FALSE)
 
-# Trecho de criaÁ„o de novas vari·veis para o diretor
+# Trecho de cria√ß√£o de novas vari√°veis para o diretor
 
 directorMean <-function(data){
   data = directorHistory [which(directorHistory ==data),2]
@@ -386,7 +403,7 @@ testData = subset(testData, select=-c(director_name))
 
 
 
-# fim da normalizaÁ„o do director_name
+# fim da normaliza√ß√£o do director_name
 
 trainData<- trainData[sapply(trainData,is.numeric)]
 testData <- testData[sapply(testData ,is.numeric)]
@@ -395,11 +412,11 @@ testData <- na.exclude(testData)
   
 ```
 
-### DefiniÁ„o das Vari·veis
+### Defini√ß√£o das Vari√°veis
 
-Nesse trecho iremos definir de maneira genÈrica as vari·veis que ser„o utilizadas daqui em diante. Esse processo poupa o trabalho de reescrever cÛdigo depois e tambÈm facilita a manutenÁ„o do mesmo.
+Nesse trecho iremos definir de maneira gen√©rica as vari√°veis que ser√£o utilizadas daqui em diante. Esse processo poupa o trabalho de reescrever c√≥digo depois e tamb√©m facilita a manuten√ß√£o do mesmo.
 
-```{r vari·veis}
+```{r vari√°veis}
 goal_variable = "imdb_score"
 dependent_variable = paste(goal_variable," ~ ")
 independent_variables = paste(colnames(trainData)[colnames(trainData) != goal_variable],collapse = "+")
@@ -408,33 +425,33 @@ model_variables = paste(dependent_variable,independent_variables)
 
 ## Metodologia
 
-A estratÈgia adotada ser· partir do modelo mais simples e r·pido para o modelo mais complexo e robusto. Visto isso, em nossa an·lise testaremos os quatro seguintes modelos:
+A estrat√©gia adotada ser√° partir do modelo mais simples e r√°pido para o modelo mais complexo e robusto. Visto isso, em nossa an√°lise testaremos os quatro seguintes modelos:
 
-- Modelo "Burro", ou previs„o pela mÈdia;
-- Modelo de Regress„o Linear;
-- Modelo da ¡rvore de Regress„o;
-- Modelo de Florestas AleatÛrias.
+- Modelo "Burro", ou previs√£o pela m√©dia;
+- Modelo de Regress√£o Linear;
+- Modelo da √Årvore de Regress√£o;
+- Modelo de Florestas Aleat√≥rias.
 
-AlÈm disso, para facilitar a avaliaÁ„o dos modelos, adotaremos um indicador numÈrico unit·rio de erro. O indicador escolhido ser· o **RMSE**. O RMSE *(root-mean-square error)* representa o desvio padr„o das diferenÁas entre os valores estimados e os valores esperados e È calculado como a raiz quadrada do SSE *(sum of squared errors of prediction* dividido pelo n˙mero de registros. O interessante desse indicador È que ele d· uma estimativa de erro na mesma escala da vari·vel.
+Al√©m disso, para facilitar a avalia√ß√£o dos modelos, adotaremos um indicador num√©rico unit√°rio de erro. O indicador escolhido ser√° o **RMSE**. O RMSE *(root-mean-square error)* representa o desvio padr√£o das diferen√ßas entre os valores estimados e os valores esperados e √© calculado como a raiz quadrada do SSE *(sum of squared errors of prediction* dividido pelo n√∫mero de registros. O interessante desse indicador √© que ele d√° uma estimativa de erro na mesma escala da vari√°vel.
 
 ### Modelo "Burro"
 
-O modelo "Burro" consiste em estimar os valores de uma vari·vel atravÈs da mÈdia dos valores observados dessa mesma vari·vel.
+O modelo "Burro" consiste em estimar os valores de uma vari√°vel atrav√©s da m√©dia dos valores observados dessa mesma vari√°vel.
 
-```{r ModeloMÈdia}
+```{r ModeloM√©dia}
 DumbPredict = mean(trainData$imdb_score)
 SSE = sum((testData$imdb_score - DumbPredict)^2)
 RMSE = sqrt(SSE / nrow(testData))
 RMSE
 ```
 
-Este È um resultado RMSE muito ruim, o que j· era esperado, pois, como o nome indica, este modelo n„o È adequado para fazer estimativas na maior parte dos casos em que n„o se tem um volume extremamente grande de dados.
+Este √© um resultado RMSE muito ruim, o que j√° era esperado, pois, como o nome indica, este modelo n√£o √© adequado para fazer estimativas na maior parte dos casos em que n√£o se tem um volume extremamente grande de dados.
 
-## Modelo de Regress„o Linear
+## Modelo de Regress√£o Linear
 
-O modelo de Regress„o Linear consiste em estimar uma vari·vel *(chamada de vari·vel dependente)* a partir de outra vari·vel *(chamada de vari·vel independente)* estimando os par‚metros da relaÁ„o linear entre elas.
+O modelo de Regress√£o Linear consiste em estimar uma vari√°vel *(chamada de vari√°vel dependente)* a partir de outra vari√°vel *(chamada de vari√°vel independente)* estimando os par√¢metros da rela√ß√£o linear entre elas.
 
-Uma relaÁ„o linear È do tipo: y(t) = ax(t) + b, onde y(t) È a vari·vel dependente e x(t) È a vari·vel independente.
+Uma rela√ß√£o linear √© do tipo: y(t) = ax(t) + b, onde y(t) √© a vari√°vel dependente e x(t) √© a vari√°vel independente.
 
 
 ```{r ModeloLinear, echo=FALSE}
@@ -447,12 +464,12 @@ RMSE = sqrt(SSE / nrow(testData))
 RMSE
 ```
 
-Como esperado, o modelo de Regress„o Linear obteve um resultado melhor que o modelo de previs„o pela mÈdia, porÈm ainda n„o apresenta um bom resultado. Muito disso porque, como vimos em diversas plotagens anteriormente, a maior parte das vari·veis n„o segue uma relaÁ„o linear.
+Como esperado, o modelo de Regress√£o Linear obteve um resultado melhor que o modelo de previs√£o pela m√©dia, por√©m ainda n√£o apresenta um bom resultado. Muito disso porque, como vimos em diversas plotagens anteriormente, a maior parte das vari√°veis n√£o segue uma rela√ß√£o linear.
 
 
-## Modelo da ¡rvore de Regress„o
+## Modelo da √Årvore de Regress√£o
 
-O modelo da ¡rvore de Regress„o consiste em criar uma ·rvore de decis„o cujo resultado È um n˙mero que representa o valor estimado da vari·vel. Os nÛs de decis„o da ·rvore de regress„o s„o formados por outras vari·veis do conjunto de dados que s„o selecionadas pelo algoritmo.
+O modelo da √Årvore de Regress√£o consiste em criar uma √°rvore de decis√£o cujo resultado √© um n√∫mero que representa o valor estimado da vari√°vel. Os n√≥s de decis√£o da √°rvore de regress√£o s√£o formados por outras vari√°veis do conjunto de dados que s√£o selecionadas pelo algoritmo.
 
 ``` {r modeloArvoreDeRegressao}
 set.seed(3)
@@ -486,15 +503,15 @@ RMSE=sqrt(mean((p.rpart-testData$imdb_score)^2))
 RMSE
 ```
 
-Diferentemente do que era esperado, o modelo de ·rvore de regress„o obteve um resultado pior do que o modelo de regress„o linear, que È mais simples. Uma possÌvel causa deste resultado È a sensibilidade desse modelo a outliers.
+Diferentemente do que era esperado, o modelo de √°rvore de regress√£o obteve um resultado pior do que o modelo de regress√£o linear, que √© mais simples. Uma poss√≠vel causa deste resultado √© a sensibilidade desse modelo a outliers.
 
 
-## Modelo de Florestas AleatÛrias
+## Modelo de Florestas Aleat√≥rias
 
-O modelo de florestas aleatÛrias cria um determinado n˙mero de ·rvores nas quais ele distribui os par‚metros aleatÛriamente. Em geral, de todas essas ·rvores geradas aleatÛriamente, aquela que obtem o melhor resultado È melhor do que a ·rvore criada pelo algoritmo no modelo de ·rvore de regress„o simples. Nesta an·lise, foram criadas florestas aleatÛrias com diferentes n˙meros de ·rvores para obter aquele que gera o melhor resultado.
+O modelo de florestas aleat√≥rias cria um determinado n√∫mero de √°rvores nas quais ele distribui os par√¢metros aleat√≥riamente. Em geral, de todas essas √°rvores geradas aleat√≥riamente, aquela que obtem o melhor resultado √© melhor do que a √°rvore criada pelo algoritmo no modelo de √°rvore de regress√£o simples. Nesta an√°lise, foram criadas florestas aleat√≥rias com diferentes n√∫meros de √°rvores para obter aquele que gera o melhor resultado.
 
 
-```{r ModeloFlorestaaleatÛria}
+```{r ModeloFlorestaaleat√≥ria}
 array_ntree<- c(100,200,300,400,500,600,700,800,900)
 RMSE_vector <- c()
 for(i in array_ntree){
@@ -509,10 +526,27 @@ min(RMSE_vector)
 
 ```
 
-**Desempenho do modelo de acordo com o n˙mero de ·rvores utilizadas**
+**Desempenho do modelo de acordo com o n√∫mero de √°rvores utilizadas**
 
 ```{r desempenhoVsArvores}
 ggplot(data.frame(array_ntree,RMSE_vector), aes(x=(array_ntree), y=RMSE_vector)) + geom_line() + geom_point()
 ```
 
-Como esperado, o modelo de florestas aleatÛrias, por ser o modelo mais complexo e robusto, obteve um excelente resultado, sendo melhor do que todos os testados anteriormente.
+Como esperado, o modelo de florestas aleat√≥rias, por ser o modelo mais complexo e robusto, obteve um excelente resultado, sendo melhor do que todos os testados anteriormente.
+
+
+## Modelo de Rede Neural
+
+```{r RedeNeural}
+n <- names(trainData)
+nn <- neuralnet(model_variables,data= trainData,hidden=c(5,3),linear.output=T)
+pr.nn <- compute(nn,testData[,-c(which(colnames(testData)=="imdb_score"))])
+plot(nn)
+SSE = sum((testData$imdb_score - pr.nn$net.result)^2)
+RMSE = sqrt(SSE / nrow(testData))
+
+ggplot(testData,aes(x=testData$imdb_score, y=pr.nn$net.result)) + geom_point(colour="grey60") +
+  stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Rede Neural") + xlab("Conjunto de Testes")
+
+```
+  
