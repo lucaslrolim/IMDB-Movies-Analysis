@@ -2,10 +2,7 @@
 title: "Análise  - Inteligência Computacional -  COC 361"
 author: "Lucas Rolim e Anderson Barbosa"
 date: "21 de outubro de 2016"
-output:
-  html_document: default
-  word_document:
-    reference_docx: template.docx
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -345,8 +342,6 @@ Por fim, um outro aspecto interessante que merece ser comentado é o fato de nã
 
 
 
----
-
 ### Ajuste de Escala
 
 **EXPLICAR**
@@ -355,9 +350,9 @@ Por fim, um outro aspecto interessante que merece ser comentado é o fato de nã
 maxs <- apply(imdb_data, 2, max) 
 mins <- apply(imdb_data, 2, min)
 imdb_data<- as.data.frame(scale(imdb_data, center = mins, scale = maxs - mins))
-
-
 ```
+
+
 ### Particionamento dos conjunto de dados
 
 Utilizaremos dois conjuntos de dados ao longo das análises, um para treino e um para testes. Essa estratégia visa evitar *(ou ao menos identificar)* o problema de overfitting do modelo no conjunto de treino.
@@ -372,6 +367,10 @@ set.seed(161095)
 split = sample.split(imdb_data$imdb_score,SplitRatio = 0.7)
 trainData = subset(imdb_data,split == TRUE)
 testData = subset(imdb_data,split == FALSE)
+
+# Criação dos folds de validação cruzada
+
+folds <- cut(seq(1,nrow(yourData)),breaks=10,labels=FALSE)
 
 # Trecho de criação de novas variáveis para o diretor
 
@@ -425,24 +424,36 @@ model_variables = paste(dependent_variable,independent_variables)
 
 ## Metodologia
 
-A estratégia adotada será partir do modelo mais simples e rápido para o modelo mais complexo e robusto. Visto isso, em nossa análise testaremos os quatro seguintes modelos:
+A estratégia adotada será partir do modelo mais simples e rápido para o modelo mais complexo e robusto. Visto isso, em nossa análise testaremos os cinco seguintes modelos:
 
 - Modelo "Burro", ou previsão pela média;
 - Modelo de Regressão Linear;
 - Modelo da Árvore de Regressão;
-- Modelo de Florestas Aleatórias.
+- Modelo de Florestas Aleatórias;
+- Modelo de Redes Neurais.
 
 Além disso, para facilitar a avaliação dos modelos, adotaremos um indicador numérico unitário de erro. O indicador escolhido será o **RMSE**. O RMSE *(root-mean-square error)* representa o desvio padrão das diferenças entre os valores estimados e os valores esperados e é calculado como a raiz quadrada do SSE *(sum of squared errors of prediction* dividido pelo número de registros. O interessante desse indicador é que ele dá uma estimativa de erro na mesma escala da variável.
 
-### Modelo "Burro"
+**Em primeiro lugar vamos criar um data.frame para armazenar nossos resultados**
 
-O modelo "Burro" consiste em estimar os valores de uma variável através da média dos valores observados dessa mesma variável.
+```{r results}
+results <- data.frame(Nome = character(0), MSE = integer(0), RMSE = integer(0))
+```
+---
+
+
+### Previsão pela Média
+
+O modelo de previsão pela média consiste em estimar os valores de uma variável através da média dos valores observados dessa mesma variável.
 
 ```{r ModeloMédia}
 DumbPredict = mean(trainData$imdb_score)
 SSE = sum((testData$imdb_score - DumbPredict)^2)
-RMSE = sqrt(SSE / nrow(testData))
-RMSE
+results <- rbind(results,data.frame(Nome = "Previsão pela Média",
+                                      RMSE = sqrt(SSE / nrow(testData)),
+                                      MSE = SSE / nrow(testData))
+                   )
+results
 ```
 
 Este é um resultado RMSE muito ruim, o que já era esperado, pois, como o nome indica, este modelo não é adequado para fazer estimativas na maior parte dos casos em que não se tem um volume extremamente grande de dados.
@@ -457,11 +468,16 @@ Uma relação linear é do tipo: y(t) = ax(t) + b, onde y(t) é a variável depe
 ```{r ModeloLinear, echo=FALSE}
 linearModel = lm(model_variables,data=trainData)
 summary(linearModel)
-
 linerPrediction = predict(linearModel,testData)
 SSE = sum((testData$imdb_score - linerPrediction)^2)
-RMSE = sqrt(SSE / nrow(testData))
-RMSE
+results <- rbind(results,data.frame(Nome = "Regressão Linear",
+                                      RMSE = sqrt(SSE / nrow(testData)),
+                                      MSE = SSE / nrow(testData))
+                   )
+results
+
+ggplot(testData,aes(x=testData$imdb_score, y=linerPrediction )) + geom_point(colour="grey60") +
+  stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Modelo Linear") + xlab("Conjunto de Testes")
 ```
 
 Como esperado, o modelo de Regressão Linear obteve um resultado melhor que o modelo de previsão pela média, porém ainda não apresenta um bom resultado. Muito disso porque, como vimos em diversas plotagens anteriormente, a maior parte das variáveis não segue uma relação linear.
@@ -499,8 +515,12 @@ cor(p.rpart,testData$imdb_score)
 
 
 ```{r}
-RMSE=sqrt(mean((p.rpart-testData$imdb_score)^2))
-RMSE
+SSE = sum((testData$imdb_score - p.rpart)^2)
+results <- rbind(results,data.frame(Nome = "Àrvore de Regressão",
+                                      RMSE = sqrt(SSE / nrow(testData)),
+                                      MSE = SSE / nrow(testData))
+                   )
+results
 ```
 
 Diferentemente do que era esperado, o modelo de árvore de regressão obteve um resultado pior do que o modelo de regressão linear, que é mais simples. Uma possível causa deste resultado é a sensibilidade desse modelo a outliers.
@@ -522,8 +542,12 @@ for(i in array_ntree){
   RMSE = sqrt(SSE / nrow(testData))
   RMSE_vector <- c(RMSE_vector,RMSE)
 }
-min(RMSE_vector)
 
+results <- rbind(results,data.frame(Nome = "Floresta Aleatória",
+                                      RMSE = min(RMSE_vector),
+                                      MSE = min(RMSE_vector)*min(RMSE_vector))
+                   )
+results
 ```
 
 **Desempenho do modelo de acordo com o número de árvores utilizadas**
@@ -543,7 +567,11 @@ nn <- neuralnet(model_variables,data= trainData,hidden=c(5,3),linear.output=T)
 pr.nn <- compute(nn,testData[,-c(which(colnames(testData)=="imdb_score"))])
 plot(nn)
 SSE = sum((testData$imdb_score - pr.nn$net.result)^2)
-RMSE = sqrt(SSE / nrow(testData))
+results <- rbind(results,data.frame(Nome = "Rede Neural",
+                                    RMSE = sqrt(SSE / nrow(testData)),
+                                    MSE = SSE / nrow(testData))
+                 )
+results
 
 ggplot(testData,aes(x=testData$imdb_score, y=pr.nn$net.result)) + geom_point(colour="grey60") +
   stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Rede Neural") + xlab("Conjunto de Testes")
