@@ -85,6 +85,7 @@ library(rpart.plot)
 library(randomForest)
 library(neuralnet)
 library(caTools)
+library(caret)
 ```
 
 O formato do conjunto de cados que necessitamos ler é *.csv*, o qual já possui suporte nativo do próprio R. O formato desse relatório, por sua vez, é *.rmd*, um formato que possibilita uma explicação mais bem elaborada do processo executado.
@@ -368,9 +369,6 @@ split = sample.split(imdb_data$imdb_score,SplitRatio = 0.7)
 trainData = subset(imdb_data,split == TRUE)
 testData = subset(imdb_data,split == FALSE)
 
-# Criação dos folds de validação cruzada
-
-folds <- cut(seq(1,nrow(yourData)),breaks=10,labels=FALSE)
 
 # Trecho de criação de novas variáveis para o diretor
 
@@ -384,31 +382,17 @@ directorMNumber <-function(data){
   data
 }
 
-directorHistory = summarise(group_by(trainData,director_name),mean=mean(imdb_score),number = n())
-directorIMDB =  sapply(trainData$director_name,directorMean)
-directorMovies = sapply(trainData$director_name,directorMNumber)
-trainData$directorIMDB <- as.numeric(directorIMDB)
-trainData$directorMovies <- as.numeric(directorMovies)
+DMeanNorm <- function(data){
+  directorIMDB =  sapply(data$director_name,directorMean)
+  directorMovies = sapply(data$director_name,directorMNumber)
+  data$directorIMDB <- as.numeric(directorIMDB)
+  data$directorMovies <- as.numeric(directorMovies)
+  my_data <- subset(data, select=-c(director_name))
+  my_data <- my_data [sapply(my_data ,is.numeric)]
+  my_data  <- na.exclude(my_data )
+  my_data
+}
 
-
-directorHistory = summarise(group_by(testData,director_name),mean=mean(imdb_score),number = n())
-directorIMDB_t =  sapply(testData$director_name,directorMean)
-directorMovies_t = sapply(testData$director_name,directorMNumber)
-testData$directorIMDB <- as.numeric(directorIMDB_t)
-testData$directorMovies <- as.numeric(directorMovies_t)
-
-trainData = subset(trainData, select=-c(director_name))
-testData = subset(testData, select=-c(director_name))
-
-
-
-# fim da normalização do director_name
-
-trainData<- trainData[sapply(trainData,is.numeric)]
-testData <- testData[sapply(testData ,is.numeric)]
-trainData <- na.exclude(trainData)
-testData <- na.exclude(testData)
-  
 ```
 
 ### Definição das Variáveis
@@ -416,9 +400,11 @@ testData <- na.exclude(testData)
 Nesse trecho iremos definir de maneira genérica as variáveis que serão utilizadas daqui em diante. Esse processo poupa o trabalho de reescrever código depois e também facilita a manutenção do mesmo.
 
 ```{r variáveis}
+n = colnames(imdb_data)[-c(which(colnames(imdb_data) == "director_name"))]
+n = c(n,"directorMovies","directorIMDB")
 goal_variable = "imdb_score"
 dependent_variable = paste(goal_variable," ~ ")
-independent_variables = paste(colnames(trainData)[colnames(trainData) != goal_variable],collapse = "+")
+independent_variables = paste(n[n != goal_variable],collapse = "+")
 model_variables = paste(dependent_variable,independent_variables)
 ```
 
@@ -434,10 +420,13 @@ A estratégia adotada será partir do modelo mais simples e rápido para o model
 
 Além disso, para facilitar a avaliação dos modelos, adotaremos um indicador numérico unitário de erro. O indicador escolhido será o **RMSE**. O RMSE *(root-mean-square error)* representa o desvio padrão das diferenças entre os valores estimados e os valores esperados e é calculado como a raiz quadrada do SSE *(sum of squared errors of prediction* dividido pelo número de registros. O interessante desse indicador é que ele dá uma estimativa de erro na mesma escala da variável.
 
-**Em primeiro lugar vamos criar um data.frame para armazenar nossos resultados**
+**Em primeiro lugar vamos criar um data.frame para armazenar nossos resultados e os nossos folds para validação cruzada**
 
 ```{r results}
 results <- data.frame(Nome = character(0), MSE = integer(0), RMSE = integer(0))
+
+folds <- cut(seq(1,nrow(imdb_data)),breaks=10,labels=FALSE)
+folds_size = length(unique(folds))
 ```
 ---
 
@@ -447,11 +436,31 @@ results <- data.frame(Nome = character(0), MSE = integer(0), RMSE = integer(0))
 O modelo de previsão pela média consiste em estimar os valores de uma variável através da média dos valores observados dessa mesma variável.
 
 ```{r ModeloMédia}
-DumbPredict = mean(trainData$imdb_score)
-SSE = sum((testData$imdb_score - DumbPredict)^2)
+percent = 0
+sum_RMSE = 0
+sum_MSE = 0
+SSE = 0
+for(i in 1:10){
+  testIndexes <- which(folds==i,arr.ind=TRUE)
+  testData <- imdb_data[testIndexes, ]
+  trainData <- imdb_data[-testIndexes, ]
+  directorHistory = summarise(group_by(testData ,director_name),mean=mean(imdb_score),number = n())
+  testData <- DMeanNorm(testData)
+  directorHistory = summarise(group_by(trainData ,director_name),mean=mean(imdb_score),number = n())
+  trainData <-DMeanNorm(trainData)
+  DumbPredict = mean(trainData$imdb_score)
+  SSE = sum((testData$imdb_score - DumbPredict)^2)
+  sum_RMSE = sum_RMSE + sqrt(SSE / nrow(testData))
+  sum_MSE = sum_MSE + SSE / nrow(testData)
+  SSE = 0
+  percent = percent+ 10
+  print(paste(percent,"%",sep=""))
+}
+
+
 results <- rbind(results,data.frame(Nome = "Previsão pela Média",
-                                      RMSE = sqrt(SSE / nrow(testData)),
-                                      MSE = SSE / nrow(testData))
+                                      RMSE = sum_RMSE/folds_size ,
+                                      MSE = sum_MSE/folds_size)
                    )
 results
 ```
@@ -468,14 +477,31 @@ Uma relação linear é do tipo: y(t) = ax(t) + b, onde y(t) é a variável depe
 ```{r ModeloLinear, echo=FALSE}
 linearModel = lm(model_variables,data=trainData)
 summary(linearModel)
-linerPrediction = predict(linearModel,testData)
-SSE = sum((testData$imdb_score - linerPrediction)^2)
-results <- rbind(results,data.frame(Nome = "Regressão Linear",
-                                      RMSE = sqrt(SSE / nrow(testData)),
-                                      MSE = SSE / nrow(testData))
+percent = 0
+sum_RMSE = 0
+sum_MSE = 0
+SSE = 0
+for(i in 1:10){
+  testIndexes <- which(folds==i,arr.ind=TRUE)
+  testData <- imdb_data[testIndexes, ]
+  trainData <- imdb_data[-testIndexes, ]
+  directorHistory = summarise(group_by(testData ,director_name),mean=mean(imdb_score),number = n())
+  testData <- DMeanNorm(testData)
+  directorHistory = summarise(group_by(trainData ,director_name),mean=mean(imdb_score),number = n())
+  trainData <-DMeanNorm(trainData)
+  linerPrediction = predict(linearModel,testData)
+  SSE = sum((testData$imdb_score - linerPrediction)^2)
+    sum_RMSE = sum_RMSE + sqrt(SSE / nrow(testData))
+  sum_MSE = sum_MSE + SSE / nrow(testData)
+  SSE = 0
+  percent = percent+ 10
+  print(paste(percent,"%",sep=""))
+}
+results <- rbind(results,data.frame(Nome = "Modelo Linear",
+                                      RMSE = sum_RMSE/folds_size ,
+                                      MSE = sum_MSE/folds_size)
                    )
 results
-
 ggplot(testData,aes(x=testData$imdb_score, y=linerPrediction )) + geom_point(colour="grey60") +
   stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Modelo Linear") + xlab("Conjunto de Testes")
 ```
@@ -533,21 +559,40 @@ O modelo de florestas aleatórias cria um determinado número de árvores nas qu
 
 ```{r ModeloFlorestaaleatória}
 array_ntree<- c(100,200,300,400,500,600,700,800,900)
-RMSE_vector <- c()
-for(i in array_ntree){
-  set.seed(1995)
-  stevenForest = randomForest(imdb_score  ~.,data=trainData,ntree = i)
-  predictForest = predict(stevenForest,newdata= testData)
-  SSE = sum((testData$imdb_score - predictForest)^2)
-  RMSE = sqrt(SSE / nrow(testData))
-  RMSE_vector <- c(RMSE_vector,RMSE)
+percent = 0
+sum_RMSE = 0
+sum_MSE = 0
+SSE = 0
+for(j in 1:10){
+  testIndexes <- which(folds==j,arr.ind=TRUE)
+  testData <- imdb_data[testIndexes, ]
+  trainData <- imdb_data[-testIndexes, ]
+  directorHistory = summarise(group_by(testData ,director_name),mean=mean(imdb_score),number = n())
+  testData <- DMeanNorm(testData)
+  directorHistory = summarise(group_by(trainData ,director_name),mean=mean(imdb_score),number = n())
+  trainData <-DMeanNorm(trainData)
+  RMSE_vector <- c()
+  for(i in array_ntree){
+    set.seed(1995)
+    stevenForest = randomForest(imdb_score  ~.,data=trainData,ntree = i)
+    predictForest = predict(stevenForest,newdata= testData)
+    SSE = sum((testData$imdb_score - predictForest)^2)
+    RMSE = sqrt(SSE / nrow(testData))
+    RMSE_vector <- c(RMSE_vector,RMSE)
+  }
+  sum_RMSE = sum_RMSE + min(RMSE_vector)
+  sum_MSE = sum_MSE + (min(RMSE_vector)*min(RMSE_vector))
+  SSE = 0
+  percent = percent+ 10
+  print(paste(percent,"%",sep=""))
 }
-
 results <- rbind(results,data.frame(Nome = "Floresta Aleatória",
-                                      RMSE = min(RMSE_vector),
-                                      MSE = min(RMSE_vector)*min(RMSE_vector))
+                                      RMSE = sum_RMSE/folds_size ,
+                                      MSE = sum_MSE/folds_size)
                    )
 results
+
+
 ```
 
 **Desempenho do modelo de acordo com o número de árvores utilizadas**
