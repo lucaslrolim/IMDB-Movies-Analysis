@@ -345,7 +345,7 @@ Por fim, um outro aspecto interessante que merece ser comentado é o fato de nã
 
 ### Ajuste de Escala
 
-**EXPLICAR**
+Vamos converter todos os nossos dados para uma escala de variação aproximada entre -1 e 1, de modo a melhorar nossos resultados e muitas vezes a velocidade de conversão do método.
 
 ```{r scale}
 maxs <- apply(imdb_data, 2, max) 
@@ -356,19 +356,13 @@ imdb_data<- as.data.frame(scale(imdb_data, center = mins, scale = maxs - mins))
 
 ### Particionamento dos conjunto de dados
 
-Utilizaremos dois conjuntos de dados ao longo das análises, um para treino e um para testes. Essa estratégia visa evitar *(ou ao menos identificar)* o problema de overfitting do modelo no conjunto de treino.
+Vamos utilizar a técnica de validação cruzada de 10 ciclos. Para isso criaremos um vetor de índices folds, que nos auxiliará na separação dos grupos de validação durnate as diferentes iterações.
 
-A proporção da separação foi de 70% dos dados para treino e 30% para testes. Essas proporção foi retirada da literatura.
-
-```{r split}
+```{r splitFunctions}
 
 imdb_data$director_name <- temp
 
 set.seed(161095)
-split = sample.split(imdb_data$imdb_score,SplitRatio = 0.7)
-trainData = subset(imdb_data,split == TRUE)
-testData = subset(imdb_data,split == FALSE)
-
 
 # Trecho de criação de novas variáveis para o diretor
 
@@ -389,9 +383,15 @@ DMeanNorm <- function(data){
   data$directorMovies <- as.numeric(directorMovies)
   my_data <- subset(data, select=-c(director_name))
   my_data <- my_data [sapply(my_data ,is.numeric)]
+  my_data$directorIMDB = (my_data$directorIMDB -mean(my_data$directorIMDB))/(max(my_data$directorIMDB)-min(my_data$directorIMDB))
+  my_data$directorMovies = (my_data$directorMovies - mean(my_data$directorMovies))/(max(my_data$directorMovies)- min(my_data$directorMovies))
   my_data  <- na.exclude(my_data )
   my_data
 }
+
+maxs <- apply(imdb_data, 2, max) 
+mins <- apply(imdb_data, 2, min)
+imdb_data<- as.data.frame(scale(imdb_data, center = mins, scale = maxs - mins))
 
 ```
 
@@ -419,6 +419,8 @@ A estratégia adotada será partir do modelo mais simples e rápido para o model
 - Modelo de Redes Neurais.
 
 Além disso, para facilitar a avaliação dos modelos, adotaremos um indicador numérico unitário de erro. O indicador escolhido será o **RMSE**. O RMSE *(root-mean-square error)* representa o desvio padrão das diferenças entre os valores estimados e os valores esperados e é calculado como a raiz quadrada do SSE *(sum of squared errors of prediction* dividido pelo número de registros. O interessante desse indicador é que ele dá uma estimativa de erro na mesma escala da variável.
+
+Uma observação importante é que quanto normalizamos a escala dos dados o RMSE perde um pouco da sua vantagem sobre o MSE *(Mean-square-error)*, visto isso quanto optarmos por normalizar a escala do problema vamos gerar ambos os indicadores de erro para termos de comparação.
 
 **Em primeiro lugar vamos criar um data.frame para armazenar nossos resultados e os nossos folds para validação cruzada**
 
@@ -465,7 +467,6 @@ results <- rbind(results,data.frame(Nome = "Previsão pela Média",
 results
 ```
 
-Este é um resultado RMSE muito ruim, o que já era esperado, pois, como o nome indica, este modelo não é adequado para fazer estimativas na maior parte dos casos em que não se tem um volume extremamente grande de dados.
 
 ## Modelo de Regressão Linear
 
@@ -475,7 +476,6 @@ Uma relação linear é do tipo: y(t) = ax(t) + b, onde y(t) é a variável depe
 
 
 ```{r ModeloLinear, echo=FALSE}
-linearModel = lm(model_variables,data=trainData)
 summary(linearModel)
 percent = 0
 sum_RMSE = 0
@@ -489,6 +489,7 @@ for(i in 1:10){
   testData <- DMeanNorm(testData)
   directorHistory = summarise(group_by(trainData ,director_name),mean=mean(imdb_score),number = n())
   trainData <-DMeanNorm(trainData)
+  linearModel = lm(model_variables,data=trainData)
   linerPrediction = predict(linearModel,testData)
   SSE = sum((testData$imdb_score - linerPrediction)^2)
     sum_RMSE = sum_RMSE + sqrt(SSE / nrow(testData))
@@ -502,6 +503,7 @@ results <- rbind(results,data.frame(Nome = "Modelo Linear",
                                       MSE = sum_MSE/folds_size)
                    )
 results
+
 ggplot(testData,aes(x=testData$imdb_score, y=linerPrediction )) + geom_point(colour="grey60") +
   stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Modelo Linear") + xlab("Conjunto de Testes")
 ```
@@ -607,16 +609,41 @@ Como esperado, o modelo de florestas aleatórias, por ser o modelo mais complexo
 ## Modelo de Rede Neural
 
 ```{r RedeNeural}
-n <- names(trainData)
-nn <- neuralnet(model_variables,data= trainData,hidden=c(5,3),linear.output=T)
-pr.nn <- compute(nn,testData[,-c(which(colnames(testData)=="imdb_score"))])
-plot(nn)
-SSE = sum((testData$imdb_score - pr.nn$net.result)^2)
+#Validação 5 ciclos
+folds_n <- cut(seq(1,nrow(imdb_data)),breaks=5,labels=FALSE)
+folds_size_n = length(unique(folds))
+
+percent = 0
+sum_RMSE = 0
+sum_MSE = 0
+SSE = 0
+for(i in 1:folds_size_n){
+  testIndexes <- which(folds_n==i,arr.ind=TRUE)
+  testData <- imdb_data[testIndexes, ]
+  trainData <- imdb_data[-testIndexes, ]
+  directorHistory = summarise(group_by(testData ,director_name),mean=mean(imdb_score),number = n())
+  testData <- DMeanNorm(testData)
+  directorHistory = summarise(group_by(trainData ,director_name),mean=mean(imdb_score),number = n())
+  trainData <-DMeanNorm(trainData)
+  n <- names(trainData)
+  nn <- neuralnet(model_variables,data= trainData,hidden=c(50,50),linear.output=,stepmax=1e6)
+  pr.nn <- compute(nn,testData[,-c(which(colnames(testData)=="imdb_score"))])
+  SSE = sum((testData$imdb_score - pr.nn$net.result)^2)
+  sum_RMSE = sum_RMSE + sqrt(SSE / nrow(testData))
+  sum_MSE = sum_MSE + SSE / nrow(testData)
+  print(sum_RMSE/i)
+  SSE = 0
+  percent = percent+ 20
+  print(paste(percent,"%",sep=""))
+}
+
+
 results <- rbind(results,data.frame(Nome = "Rede Neural",
-                                    RMSE = sqrt(SSE / nrow(testData)),
-                                    MSE = SSE / nrow(testData))
-                 )
+                                      RMSE = sum_RMSE/folds_size ,
+                                      MSE = sum_MSE/folds_size)
+                   )
 results
+
 
 ggplot(testData,aes(x=testData$imdb_score, y=pr.nn$net.result)) + geom_point(colour="grey60") +
   stat_smooth(method=lm, se=FALSE, colour="black") + ylab("Rede Neural") + xlab("Conjunto de Testes")
